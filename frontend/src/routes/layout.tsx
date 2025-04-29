@@ -1,11 +1,18 @@
 import { Outlet } from "react-router";
+import { Layout } from "antd";
+import AppHeader from "../components/common/Header";
 
-export default function Layout() {
+const { Content } = Layout;
+
+export default function AppLayout() {
   return (
-    <>
-      <div>Header</div>
-      <Outlet />
-      <div>Footer</div>
-    </>
+    <Layout>
+      <AppHeader />
+      <Content>
+        <main className="container min-h-screen">
+          <Outlet />
+        </main>
+      </Content>
+    </Layout>
   );
 }
