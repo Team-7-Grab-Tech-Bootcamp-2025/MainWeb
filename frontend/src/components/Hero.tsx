@@ -1,21 +1,14 @@
-import { useState } from "react";
-import { Input, Typography, Space, Flex } from "antd";
+import { Typography, Space, Flex } from "antd";
+import SearchBar from "./SearchBar";
 
 interface HeroProps {
   title: string;
   subtitle: string;
-  onSearch?: (searchTerm: string) => void;
 }
 
 const { Title, Paragraph } = Typography;
 
-const Hero: React.FC<HeroProps> = ({ title, subtitle, onSearch }) => {
-  const [searchTerm, setSearchTerm] = useState("");
-
-  const handleSearch = (value: string) => {
-    if (onSearch) onSearch(value);
-  };
-
+const Hero: React.FC<HeroProps> = ({ title, subtitle }) => {
   return (
     <Flex className="relative h-72 w-full items-center justify-center">
       <Space
@@ -35,15 +28,11 @@ const Hero: React.FC<HeroProps> = ({ title, subtitle, onSearch }) => {
         </Paragraph>
 
         {/* Search Bar */}
-        <div className="mx-auto w-full max-w-3xl">
-          <Input.Search
-            placeholder="Search..."
-            enterButton="Search"
+        <div id="hero-search" className="mx-auto w-full max-w-3xl">
+          <SearchBar
             size="large"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onSearch={handleSearch}
             className="rounded-lg shadow-xl"
+            addonWidth={130}
           />
         </div>
       </Space>
