@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { NavLink, useLoaderData, useParams } from "react-router";
-import { Typography, Row, Col, Pagination, Card, Empty } from "antd";
-import RestaurantCard from "../components/common/RestaurantCard";
+import { Typography, Row, Col, Pagination, Card, Empty, Button } from "antd";
+import RestaurantCard from "../components/RestaurantCard";
 
 const { Title } = Typography;
 
@@ -43,7 +43,7 @@ export async function clientLoader({
         .map((_, index) => ({
           id: index + 1,
           name: `Italian Restaurant ${index + 1}`,
-          image: `https://images.unsplash.com/photo-${1550000000 + index}?w=500&q=80`,
+          image: `https://placehold.co/500x300?text=Italian+${index + 1}`,
           rating: 3.5 + Math.random() * 1.5,
           reviewCount: Math.floor(Math.random() * 500),
           keywords: ["Pasta", "Pizza", "Italian", "Wine"]
@@ -62,7 +62,7 @@ export async function clientLoader({
         .map((_, index) => ({
           id: index + 1,
           name: `Chinese Restaurant ${index + 1}`,
-          image: `https://images.unsplash.com/photo-${1560000000 + index}?w=500&q=80`,
+          image: `https://placehold.co/500x300?text=Chinese+${index + 1}`,
           rating: 3.5 + Math.random() * 1.5,
           reviewCount: Math.floor(Math.random() * 500),
           keywords: ["Noodles", "Dumplings", "Wok", "Authentic"]
@@ -94,8 +94,8 @@ export default function CuisineDetail() {
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
         <div className="mt-4 text-center">
-          <NavLink to="/" className="ant-btn ant-btn-primary">
-            Back to Home
+          <NavLink to="/">
+            <Button type="primary">Back to Home</Button>
           </NavLink>
         </div>
       </Card>

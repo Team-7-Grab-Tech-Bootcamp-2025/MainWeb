@@ -1,9 +1,9 @@
 import { Typography, Row, Col, Card } from "antd";
 import { useLoaderData } from "react-router";
-import CuisineCard from "../components/common/CuisineCard";
-import RestaurantCard from "../components/common/RestaurantCard";
+import CuisineCard from "../components/CuisineCard";
+import RestaurantCard from "../components/RestaurantCard";
 import type { Route } from "../+types/root";
-import Hero from "../components/common/Hero";
+import Hero from "../components/Hero";
 
 const { Title } = Typography;
 
@@ -102,6 +102,26 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
             keywords: ["Authentic", "Chinese", "Noodles", "Family-style"],
             category: "Chinese",
           },
+          {
+            id: 5,
+            name: "Curry House",
+            image:
+              "https://images.unsplash.com/photo-1595295333158-4742f28fbd85?q=80&w=2080",
+            rating: 4.8,
+            reviewCount: 275,
+            keywords: ["Curry", "Indian", "Spices", "Vegetarian", "Vegan"],
+            category: "Indian",
+          },
+          {
+            id: 6,
+            name: "Bistro Belle",
+            image:
+              "https://images.unsplash.com/photo-1563245372-f21724e3856d?q=80&w=2129",
+            rating: 4.4,
+            reviewCount: 198,
+            keywords: ["French", "Elegant", "Wine", "Romantic"],
+            category: "French",
+          },
         ],
       });
     }, 1000);
@@ -133,11 +153,7 @@ export default function Home() {
 
   return (
     <>
-      <Hero
-        title={mockHeroProps.title}
-        subtitle={mockHeroProps.subtitle}
-        onSearch={(searchTerm) => console.log("Search term:", searchTerm)}
-      />
+      <Hero title={mockHeroProps.title} subtitle={mockHeroProps.subtitle} />
       <div className="space-y-12">
         <Card className="container mx-auto px-4 py-8">
           <Title level={2} className="mb-6">
