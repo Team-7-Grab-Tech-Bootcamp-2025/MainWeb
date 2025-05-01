@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { StyleProvider } from "@ant-design/cssinjs";
-import { ConfigProvider, Spin } from "antd";
+import { ConfigProvider, Flex, Spin } from "antd";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import "./index.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -41,14 +42,21 @@ export function HydrateFallback() {
         },
       }}
     >
-      <div className="relative min-h-screen">
-        <Spin
-          size="large"
-          className="absolute top-1/3 left-1/2 -translate-x-1/2"
-        />
-      </div>
+      <Flex className="min-h-screen" align="center" justify="center">
+        <Spin size="large" />
+      </Flex>
     </ConfigProvider>
   );
+}
+
+export function links() {
+  return [
+    {
+      rel: "icon",
+      href: "/favicon.ico",
+      type: "image/x-icon",
+    },
+  ];
 }
 
 export default function Root() {
