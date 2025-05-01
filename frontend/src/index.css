@@ -17,6 +17,8 @@
   --color-primary: var(--primary-color);
   --color-background: var(--background-color);
   --color-foreground: var(--foreground-color);
+
+  --animate-zoom-from-point: expandCard 0.2s ease-out forwards;
 }
 
 @layer base {
@@ -48,6 +50,18 @@
 @media (max-width: 768px) {
   .container {
     padding: 0.75rem;
+  }
+}
+
+/* Animation keyframes */
+@keyframes expandCard {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
