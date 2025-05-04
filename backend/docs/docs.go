@@ -297,7 +297,7 @@ const docTemplate = `{
                 "tags": [
                     "health"
                 ],
-                "summary": "Show the status of server. HELLO PLAPLHEHEAPLA",
+                "summary": "Show the status of server. HELLO NONO",
                 "responses": {
                     "200": {
                         "description": "OK",

@@ -249,7 +249,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Response'
-      summary: Show the status of server. HELLO PLAPLHEHEAPLA
+      summary: Show the status of server. HELLO NONO
       tags:
       - health
 schemes:
