@@ -38,7 +38,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 }
 
 // HealthCheck godoc
-// @Summary Show the status of server.
+// @Summary Show the status of server. HELLO PLAPLAPLA
 // @Description get the status of server.
 // @Tags health
 // @Accept */*
