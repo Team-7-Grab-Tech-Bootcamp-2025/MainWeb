@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -23,6 +24,7 @@ func NewController(service service.Service) *Controller {
 }
 
 func (c *Controller) RegisterRoutes(router *gin.Engine) {
+	fmt.Println("Registering routes")
 	router.GET("/health", c.HealthCheck)
 	v1 := router.Group("/api/v1")
 	{
@@ -38,7 +40,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 }
 
 // HealthCheck godoc
-// @Summary Show the status of server. HELLO PLAPLAPLA
+// @Summary Show the status of server. HELLO PLAPLHEHEAPLA
 // @Description get the status of server.
 // @Tags health
 // @Accept */*

@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /
 definitions:
   dto.TodoCreate:
     description: Todo creation request body
@@ -249,7 +249,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Response'
-      summary: Show the status of server. HELLO PLAPLAPLA
+      summary: Show the status of server. HELLO PLAPLHEHEAPLA
       tags:
       - health
 schemes:
