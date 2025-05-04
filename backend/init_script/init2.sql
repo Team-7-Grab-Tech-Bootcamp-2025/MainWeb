@@ -1,18 +1,37 @@
 USE angi_db;
 
 -- Insert Platforms
-INSERT INTO Platform (platform_name) VALUES ('Foody'), ('Befood');
+INSERT INTO Platform (platform_name) VALUES
+('Foody'),
+('Befood');
+
 
 -- Insert Users
 INSERT INTO Users (user_name, platform_id) VALUES
-('Alice', 1),
-('Bob', 2),
-('Charlie', 1);
+('Steven', 2),
+('Angela', 1),
+('James', 1),
+('Heather', 2),
+('Michael', 1),
+('Rachel', 2),
+('Matthew', 2),
+('Eric', 2),
+('Elizabeth', 2),
+('Lisa', 2);
 
 -- Insert Restaurants
 INSERT INTO Restaurant_info (restaurant_name, latitude, longitude, address, restaurant_rating, review_count, city, district) VALUES
-('Pizza House', 10.762622, 106.660172, '123 Pizza St.', 4.5, 10, 'Ho Chi Minh City', 'District 1'),
-('Noodle World', 10.776889, 106.700806, '456 Noodle Ave.', 4.2, 8, 'Ho Chi Minh City', 'District 3');
+('Bishop Inc', -78.697129, -113.859934, '8787 Alexander Alley Suite 050, New Tyler, AZ 89858', 4.21, 35, 'Ho Chi Minh City', 'District 1'),
+('Sullivan, Torres and Reed', -51.321703, -157.026604, '97833 Edwards Crossroad, South Johnbury, HI 26354', 4.12, 45, 'Ho Chi Minh City', 'District 2'),
+('Ross Ltd', -64.943822, -171.594307, '165 Lisa Springs, Port Anthony, AK 87584', 3.96, 75, 'Ho Chi Minh City', 'District 7'),
+('Woods and Sons', -75.657345, -116.718754, '62435 Edwards Pass, Lake Daniel, IA 16411', 3.37, 93, 'Ho Chi Minh City', 'District 3'),
+('Miller Ltd', 58.741365, 124.896828, '3193 Lawrence Roads Apt. 711, New Katherine, TN 71189', 3.16, 44, 'Ho Chi Minh City', 'District 4'),
+('Martinez Group', 70.658091, 3.02165, '91763 Lisa Coves, Lake Michelle, MI 24788', 3.47, 15, 'Ho Chi Minh City', 'District 9'),
+('Murphy, Sullivan and Nelson', -55.526266, -81.776397, '469 Tanya Port Apt. 353, Matthewsborough, AL 26084', 3.96, 63, 'Ho Chi Minh City', 'District 5'),
+('Taylor and Sons', -31.203336, -166.857875, '90209 Megan Union Apt. 949, East Tammyville, VT 63237', 3.58, 98, 'Ho Chi Minh City', 'District 8'),
+('Wilson LLC', -83.926782, -123.339103, '630 Kimberly Knoll, New Emilyburgh, WI 56089', 4.95, 71, 'Ho Chi Minh City', 'District 4'),
+('Taylor-Johnson', 74.13214, 118.388929, '260 James Trail Suite 642, Port David, WY 31476', 3.71, 36, 'Ho Chi Minh City', 'District 6');
+
 
 -- Insert Dishes
 INSERT INTO Dishes (item_name, restaurant_id, category_id, category_name, price) VALUES
@@ -21,13 +40,140 @@ INSERT INTO Dishes (item_name, restaurant_id, category_id, category_name, price)
 
 -- Insert Reviews
 INSERT INTO Reviews (restaurant_id, user_id, rating, feedback) VALUES
-(1, 1, 4.5, 'Delicious and fresh!'),
-(2, 2, 4.0, 'Tasty but a bit salty');
+(2, 10, 3.2, 'Kind knowledge design.'),
+(2, 4, 4.5, 'Type time foot wear mind.'),
+(9, 1, 4.4, 'Win significant civil spend.'),
+(2, 4, 4.7, 'Parent agreement fast agree.'),
+(7, 5, 4.2, 'Authority like concern.'),
+(5, 9, 4.4, 'Rule something Mrs kitchen.'),
+(7, 2, 4.3, 'Well better others town.'),
+(6, 3, 4.7, 'Shoulder bar maintain concern.'),
+(9, 7, 4.6, 'East past bar agency.'),
+(3, 10, 3.2, 'While process dog beautiful.'),
+(7, 1, 4.7, 'Board build town teach.'),
+(2, 10, 3.7, 'Sell knowledge into season.'),
+(3, 6, 4.7, 'Around white mind west.'),
+(1, 10, 3.7, 'Exactly art shoulder degree.'),
+(10, 2, 4.6, 'Cultural pressure remain yes.'),
+(9, 10, 3.5, 'Line car how much.'),
+(6, 7, 3.3, 'Culture generation here benefit.'),
+(7, 7, 4.5, 'Every strong around professor.'),
+(2, 5, 3.4, 'Decision outside process career.'),
+(3, 3, 3.5, 'Level law Congress simple.'),
+(5, 10, 3.1, 'Reflect career police pressure.'),
+(9, 3, 4.5, 'Eye scene country follow.'),
+(4, 4, 3.6, 'She magazine college.'),
+(7, 10, 4.2, 'Hope pattern ask against.'),
+(7, 1, 4.4, 'Stay strong situation anything.'),
+(2, 7, 3.7, 'Too full memory again.'),
+(4, 10, 3.4, 'Much than situation fly.'),
+(10, 1, 4.3, 'Site international billion.'),
+(4, 4, 3.5, 'Between six animal morning.'),
+(10, 7, 4.4, 'Guess themselves local.');
 
 -- Insert Feedback Labels
-INSERT INTO Feedback_labels (feedback_label_name, feedback_label_score, rating_id) VALUES
-('Fast Service', 4.5, 1),
-('Good Portion', 4.0, 2);
+INSERT INTO Feedback_labels (label, rating_label, rating_id) VALUES
+('Space', 3.88, 7),
+('Delivery', 4.69, 9),
+('Service', 4.35, 13),
+('OnPrice', 3.18, 2),
+('OnPrice', 3.3, 14),
+('Service', 4.4, 10),
+('FoodQuality', 3.78, 15),
+('OnPrice', 3.54, 25),
+('Service', 4.41, 17),
+('Space', 4.55, 18),
+('FoodQuality', 3.45, 18),
+('FoodQuality', 4.52, 23),
+('Space', 4.28, 19),
+('Space', 4.98, 5),
+('Delivery', 3.06, 24),
+('Service', 3.88, 28),
+('FoodQuality', 4.21, 7),
+('FoodQuality', 3.45, 27),
+('FoodQuality', 4.11, 3),
+('Service', 4.37, 30),
+('Space', 3.27, 11),
+('OnPrice', 3.81, 1),
+('FoodQuality', 3.87, 11),
+('OnPrice', 4.15, 18),
+('FoodQuality', 4.84, 25),
+('Space', 3.29, 27),
+('Service', 4.7, 17),
+('Service', 4.42, 29),
+('Delivery', 3.04, 15),
+('Service', 3.64, 24),
+('OnPrice', 3.7, 13),
+('Space', 4.25, 28),
+('OnPrice', 4.65, 5),
+('FoodQuality', 4.48, 14),
+('OnPrice', 3.36, 30),
+('FoodQuality', 3.94, 9),
+('Service', 3.06, 23),
+('OnPrice', 3.44, 11),
+('Service', 3.85, 11),
+('Service', 3.81, 18),
+('OnPrice', 4.82, 2),
+('Space', 3.7, 6),
+('Delivery', 4.1, 29),
+('OnPrice', 3.49, 7),
+('FoodQuality', 4.44, 25),
+('Service', 3.01, 16),
+('Service', 4.08, 29),
+('Delivery', 3.51, 16),
+('OnPrice', 4.43, 6),
+('FoodQuality', 3.98, 13),
+('OnPrice', 3.15, 20),
+('Space', 4.11, 10),
+('FoodQuality', 4.8, 14),
+('FoodQuality', 3.99, 19),
+('FoodQuality', 4.14, 6),
+('Delivery', 3.02, 7),
+('Space', 3.62, 24),
+('Delivery', 4.2, 26),
+('FoodQuality', 3.6, 25),
+('Delivery', 3.42, 15),
+('Delivery', 3.96, 28),
+('Space', 4.4, 23),
+('FoodQuality', 3.6, 8),
+('FoodQuality', 3.12, 8),
+('FoodQuality', 3.83, 2),
+('Delivery', 4.58, 26),
+('Space', 3.02, 25),
+('Delivery', 4.12, 15),
+('Space', 3.5, 10),
+('FoodQuality', 3.33, 14),
+('Service', 4.48, 8),
+('Space', 4.5, 14),
+('FoodQuality', 3.89, 7),
+('Delivery', 3.18, 2),
+('Service', 3.97, 21),
+('FoodQuality', 4.6, 21),
+('Service', 4.2, 9),
+('Service', 3.77, 16),
+('FoodQuality', 3.29, 8),
+('OnPrice', 4.96, 27),
+('OnPrice', 3.74, 14),
+('OnPrice', 3.35, 9),
+('Service', 4.79, 19),
+('Space', 4.96, 28),
+('FoodQuality', 3.76, 27),
+('Space', 3.61, 26),
+('Delivery', 4.98, 8),
+('Delivery', 3.7, 1),
+('Service', 4.2, 11),
+('Space', 4.27, 15),
+('Delivery', 4.81, 20),
+('Service', 4.46, 7),
+('Service', 4.75, 13),
+('FoodQuality', 3.13, 19),
+('Delivery', 3.85, 13),
+('Service', 3.5, 22),
+('Service', 4.68, 19),
+('FoodQuality', 4.02, 16),
+('Delivery', 4.09, 2),
+('Delivery', 3.16, 22);
+
 
 -- Insert Temp
 INSERT INTO Temp (restaurant_id, platform_id, restaurant_rating) VALUES

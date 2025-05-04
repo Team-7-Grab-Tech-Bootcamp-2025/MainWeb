@@ -54,8 +54,8 @@ CREATE TABLE Reviews (
 -- Feedback Labels table
 CREATE TABLE Feedback_labels (
     feedback_label_id INT AUTO_INCREMENT PRIMARY KEY,
-    feedback_label_name VARCHAR(100),
-    feedback_label_score DECIMAL(3, 2),
+    label VARCHAR(100),
+    rating_label DECIMAL(3, 2),
     rating_id INT,
     FOREIGN KEY (rating_id) REFERENCES Reviews(rating_id)
 );
