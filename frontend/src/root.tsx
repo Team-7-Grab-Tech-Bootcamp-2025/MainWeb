@@ -3,6 +3,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { ConfigProvider, Flex, Spin } from "antd";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import "@ant-design/v5-patch-for-react-19";
 import "./index.css";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -53,8 +54,8 @@ export function links() {
   return [
     {
       rel: "icon",
-      href: "/favicon.ico",
-      type: "image/x-icon",
+      href: "/favicon.png",
+      type: "image/png",
     },
   ];
 }

@@ -6,13 +6,8 @@ import { SearchProvider } from "../contexts/search";
 const { Content } = Layout;
 
 export default function AppLayout() {
-  const handleSearch = (searchTerm: string, districts: string[]) => {
-    console.log("Search term:", searchTerm, "Districts:", districts);
-    // Implement your search logic here
-  };
-
   return (
-    <SearchProvider onSearch={handleSearch}>
+    <SearchProvider>
       <Layout>
         <AppHeader />
         <Content>
