@@ -20,7 +20,7 @@
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "basePath": "/api/v1",
+    "basePath": "/",
     "paths": {
         "/api/v1/todos": {
             "get": {
@@ -295,7 +295,7 @@
                 "tags": [
                     "health"
                 ],
-                "summary": "Show the status of server.",
+                "summary": "Show the status of server. HELLO NONO",
                 "responses": {
                     "200": {
                         "description": "OK",

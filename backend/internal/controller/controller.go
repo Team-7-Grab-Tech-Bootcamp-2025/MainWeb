@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -23,6 +24,7 @@ func NewController(service service.Service) *Controller {
 }
 
 func (c *Controller) RegisterRoutes(router *gin.Engine) {
+	fmt.Println("Registering routes")
 	router.GET("/health", c.HealthCheck)
 	v1 := router.Group("/api/v1")
 	{
@@ -38,7 +40,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 }
 
 // HealthCheck godoc
-// @Summary Show the status of server.
+// @Summary Show the status of server. HELLO NONO
 // @Description get the status of server.
 // @Tags health
 // @Accept */*
@@ -60,6 +62,7 @@ func (x *Controller) HealthCheck(ctx *gin.Context) {
 // @Failure 500 {object} model.Response
 // @Router /api/v1/todos [get]
 func (c *Controller) GetAllTodos(ctx *gin.Context) {
+	log.Info().Msg("Fetching all todos")
 	todos, err := c.service.GetAllTodos()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch todos", nil))
@@ -81,6 +84,7 @@ func (c *Controller) GetAllTodos(ctx *gin.Context) {
 // @Failure 404 {object} model.Response
 // @Router /api/v1/todos/{id} [get]
 func (c *Controller) GetTodoByID(ctx *gin.Context) {
+	log.Info().Msg("Fetching todo by ID")
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
@@ -108,6 +112,7 @@ func (c *Controller) GetTodoByID(ctx *gin.Context) {
 // @Failure 500 {object} model.Response
 // @Router /api/v1/todos [post]
 func (c *Controller) CreateTodo(ctx *gin.Context) {
+	log.Info().Msg("Creating new todo")
 	var input dto.TodoCreate
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid input", nil))
@@ -136,6 +141,7 @@ func (c *Controller) CreateTodo(ctx *gin.Context) {
 // @Failure 500 {object} model.Response
 // @Router /api/v1/todos/{id} [put]
 func (c *Controller) UpdateTodo(ctx *gin.Context) {
+	log.Info().Msg("Updating todo")
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
@@ -169,6 +175,7 @@ func (c *Controller) UpdateTodo(ctx *gin.Context) {
 // @Failure 500 {object} model.Response
 // @Router /api/v1/todos/{id} [delete]
 func (c *Controller) DeleteTodo(ctx *gin.Context) {
+	log.Info().Msg("Deleting todo")
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
