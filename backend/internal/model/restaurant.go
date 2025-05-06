@@ -23,11 +23,26 @@ type Restaurant struct {
 	DistrictID  string  `json:"district_id"`
 }
 
-
 type RestaurantDetail struct{
 	Restaurant Restaurant `json:"restaurant"`
 	// List of food types available at the restaurant
 	FoodTypes []string `json:"food_types"`
 	// List of dishes available at the restaurant
 	Dishes []Dish `json:"dishes"`
+	// Ratings for different aspects of the restaurant
+	// Ambience, delivery, food, price, and service ratings
+	Labels LabelsRating `json:"labels"`
+}
+
+type LabelRating struct {
+	Rating float64 `json:"rating"`
+	Count  int     `json:"count"`
+}
+
+type LabelsRating struct {
+	Ambience LabelRating `json:"ambience"`
+	Delivery LabelRating `json:"delivery"`
+	Food     LabelRating `json:"food"`
+	Price    LabelRating `json:"price"`
+	Service  LabelRating `json:"service"`
 }

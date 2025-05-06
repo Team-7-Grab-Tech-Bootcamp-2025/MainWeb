@@ -19,6 +19,7 @@ type Service interface {
 	GetAllFoodTypes() ([]string, error)
 	GetDishesByRestaurantID(id int) ([]model.Dish, error)
 	GetFoodTypesByRestaurantID(id int) ([]string, error)
+	GetLabelsRating(id int) (*model.LabelsRating, error)
 	GetRestaurantDetail(id int) (*model.RestaurantDetail, error)
 }
 
@@ -131,6 +132,39 @@ func (s *service) GetFoodTypesByRestaurantID(id int) ([]string, error) {
 	return foodTypes, nil
 }
 
+func (s *service) GetLabelsRating(id int) (*model.LabelsRating, error) {
+	ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, err := s.repo.CalculateLabelsRating(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to calculate labels rating")
+		return nil, err
+	}
+
+	labelsRating := &model.LabelsRating{
+		Ambience: model.LabelRating{
+			Rating: ambienceRating,
+			Count:  ambienceCount,
+		},
+		Delivery: model.LabelRating{
+			Rating: deliveryRating,
+			Count:  deliveryCount,
+		},
+		Food: model.LabelRating{
+			Rating: foodRating,
+			Count:  foodCount,
+		},
+		Price: model.LabelRating{
+			Rating: priceRating,
+			Count:  priceCount,
+		},
+		Service: model.LabelRating{
+			Rating: serviceRating,
+			Count:  serviceCount,
+		},
+	}
+
+	return labelsRating, nil
+}
+
 func (s *service) GetRestaurantDetail(id int) (*model.RestaurantDetail, error) {
 	restaurant, err := s.GetRestaurantByID(id)
 	if err != nil {
@@ -147,10 +181,17 @@ func (s *service) GetRestaurantDetail(id int) (*model.RestaurantDetail, error) {
 		return nil, err
 	}
 
+	labelsRating, err := s.GetLabelsRating(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get labels rating")
+		return nil, err
+	}
+
 	restaurantDetail := &model.RestaurantDetail{
 		Restaurant: *restaurant,
 		Dishes:     dishes,
 		FoodTypes:  foodTypes,
+		Labels:     *labelsRating,
 	}
 
 	return restaurantDetail, nil
