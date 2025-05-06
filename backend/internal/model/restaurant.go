@@ -18,7 +18,7 @@ type Restaurant struct {
 	// Number of reviews for the restaurant
 	ReviewCount int     `json:"review_count"`
 	// City where the restaurant is located
-	City        string  `json:"city"`
+	CityID      string  `json:"city_id"`
 	// District where the restaurant is located
-	District    string  `json:"district"`
+	DistrictID  string  `json:"district_id"`
 }

@@ -29,16 +29,15 @@ definitions:
         type: string
     type: object
   model.Restaurant:
-    description: Restaurant represents a restaurant with its details This struct is
-      used to represent a restaurant in the system
+    description: This struct is used to represent a restaurant in the system
     properties:
       address:
         description: Address of the restaurant
         type: string
-      city:
+      city_id:
         description: City where the restaurant is located
         type: string
-      district:
+      district_id:
         description: District where the restaurant is located
         type: string
       id:
@@ -108,6 +107,32 @@ info:
   title: Todo List API
   version: "1.0"
 paths:
+  /api/v1/foodtypes:
+    get:
+      consumes:
+      - application/json
+      description: get all food types
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get all food types
+      tags:
+      - foodtypes
   /api/v1/restaurants/{id}:
     get:
       consumes:

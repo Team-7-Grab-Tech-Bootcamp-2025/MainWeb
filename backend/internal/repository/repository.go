@@ -95,3 +95,42 @@ func (r *repository) FindRestaurantByID(id int) (*model.Restaurant, error) {
 
 	return &restaurant, nil
 }
+
+func (r *repository) FindRestaurantByID(id int) (*model.Restaurant, error) {
+	query := "SELECT restaurant_id, restaurant_name, latitude, longitude, address, restaurant_rating, review_count, city_id, district_id FROM Restaurant WHERE restaurant_id = ?"
+	row := r.db.QueryRow(query, id)
+
+	log.Info().Msgf("Executing query: %s with id: %d", query, id)
+
+	var restaurant model.Restaurant
+	if err := row.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Latitude, &restaurant.Longitude, &restaurant.Address, &restaurant.Rating, &restaurant.ReviewCount, &restaurant.CityID, &restaurant.DistrictID); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("not found")
+		}
+		log.Error().Err(err).Msg("Error scanning restaurant data")
+		return nil, err
+	}
+
+	return &restaurant, nil
+}
+func (r *repository) FindAllFoodTypes() ([]string, error) {
+	query := "SELECT DISTINCT food_type_name FROM Food_type"
+	rows, err := r.db.Query(query)
+	if err != nil {
+		log.Error().Err(err).Msg("Error executing query to find all food types")
+		return nil, err
+	}
+	defer rows.Close()
+
+	var foodTypes []string
+	for rows.Next() {
+		var foodType string
+		if err := rows.Scan(&foodType); err != nil {
+			log.Error().Err(err).Msg("Error scanning food type data")
+			return nil, err
+		}
+		foodTypes = append(foodTypes, foodType)
+	}
+
+	return foodTypes, nil
+}

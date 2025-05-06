@@ -40,6 +40,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 		{
 			restaurants.GET("/:id", c.GetRestaurantByID)
 		}
+		v1.GET("foodtypes", c.GetAllFoodTypes)
 	}
 }
 
@@ -224,4 +225,24 @@ func (c *Controller) GetRestaurantByID(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant fetched successfully", restaurant))
+}
+
+// GetAllFoodTypes godoc
+// @Summary Get all food types
+// @Description get all food types
+// @Tags foodtypes
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Response{data=[]string}
+// @Failure 500 {object} model.Response
+// @Router /api/v1/foodtypes [get]
+func (c *Controller) GetAllFoodTypes(ctx *gin.Context) {
+	log.Info().Msg("Fetching all food types")
+	foodTypes, err := c.service.GetAllFoodTypes()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch food types", nil))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse("Food types fetched successfully", foodTypes))
 }
