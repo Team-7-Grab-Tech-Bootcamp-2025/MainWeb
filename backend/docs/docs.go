@@ -24,6 +24,50 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/foodtypes": {
+            "get": {
+                "description": "get all food types",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "foodtypes"
+                ],
+                "summary": "Get all food types",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/restaurants/{id}": {
             "get": {
                 "description": "get restaurant by ID",
@@ -405,18 +449,18 @@ const docTemplate = `{
             }
         },
         "model.Restaurant": {
-            "description": "Restaurant represents a restaurant with its details This struct is used to represent a restaurant in the system",
+            "description": "This struct is used to represent a restaurant in the system",
             "type": "object",
             "properties": {
                 "address": {
                     "description": "Address of the restaurant",
                     "type": "string"
                 },
-                "city": {
+                "city_id": {
                     "description": "City where the restaurant is located",
                     "type": "string"
                 },
-                "district": {
+                "district_id": {
                     "description": "District where the restaurant is located",
                     "type": "string"
                 },

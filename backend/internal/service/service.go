@@ -16,6 +16,7 @@ type Service interface {
 	UpdateTodo(id uint, input *dto.TodoCreate) (*model.Todo, error)
 	DeleteTodo(id uint) error
 	GetRestaurantByID(id int) (*model.Restaurant, error)
+	GetAllFoodTypes() ([]string, error)
 }
 
 type service struct {
@@ -99,4 +100,13 @@ func (s *service) GetRestaurantByID(id int) (*model.Restaurant, error) {
 		return nil, err
 	}
 	return restaurant, nil
+}
+
+func (s *service) GetAllFoodTypes() ([]string, error) {
+	foodTypes, err := s.repo.FindAllFoodTypes()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get all food types")
+		return nil, err
+	}
+	return foodTypes, nil
 }
