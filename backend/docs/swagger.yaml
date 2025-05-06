@@ -28,6 +28,27 @@ definitions:
       message:
         type: string
     type: object
+  model.Restaurant:
+    properties:
+      address:
+        type: string
+      city:
+        type: string
+      district:
+        type: string
+      id:
+        type: integer
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        type: string
+      rating:
+        type: number
+      review_count:
+        type: integer
+    type: object
   model.Todo:
     description: Todo represents a single todo item with its details
     properties:
@@ -76,6 +97,40 @@ info:
   title: Todo List API
   version: "1.0"
 paths:
+  /api/v1/restaurants/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get restaurant by ID
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Restaurant'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get a restaurant
+      tags:
+      - restaurants
   /api/v1/todos:
     get:
       consumes:

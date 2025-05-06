@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -24,7 +23,7 @@ func NewController(service service.Service) *Controller {
 }
 
 func (c *Controller) RegisterRoutes(router *gin.Engine) {
-	fmt.Println("Registering routes")
+	log.Info().Msg("Registering routes")
 	router.GET("/health", c.HealthCheck)
 	v1 := router.Group("/api/v1")
 	{
@@ -35,6 +34,11 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 			todos.POST("", c.CreateTodo)
 			todos.PUT("/:id", c.UpdateTodo)
 			todos.DELETE("/:id", c.DeleteTodo)
+		}
+
+		restaurants := v1.Group("/restaurants")
+		{
+			restaurants.GET("/:id", c.GetRestaurantByID)
 		}
 	}
 }
@@ -188,4 +192,36 @@ func (c *Controller) DeleteTodo(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, model.NewResponse("Todo deleted successfully", nil))
+}
+
+// GetRestaurantByID godoc
+// @Summary Get a restaurant
+// @Description get restaurant by ID
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Param id path int true "Restaurant ID"
+// @Success 200 {object} model.Response{data=model.Restaurant}
+// @Failure 400 {object} model.Response
+// @Failure 404 {object} model.Response
+// @Router /api/v1/restaurants/{id} [get]
+func (c *Controller) GetRestaurantByID(ctx *gin.Context) {
+	log.Info().Msg("Fetching restaurant by ID")
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
+		return
+	}
+
+	restaurant, err := c.service.GetRestaurantByID(id)
+	if err != nil {
+		if err.Error() == "not found" {
+			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))
+		} else {
+			ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch restaurant", nil))
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant fetched successfully", restaurant))
 }
