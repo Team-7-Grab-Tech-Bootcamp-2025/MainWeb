@@ -17,6 +17,9 @@ type Service interface {
 	DeleteTodo(id uint) error
 	GetRestaurantByID(id int) (*model.Restaurant, error)
 	GetAllFoodTypes() ([]string, error)
+	GetDishesByRestaurantID(id int) ([]model.Dish, error)
+	GetFoodTypesByRestaurantID(id int) ([]string, error)
+	GetRestaurantDetail(id int) (*model.RestaurantDetail, error)
 }
 
 type service struct {
@@ -109,4 +112,46 @@ func (s *service) GetAllFoodTypes() ([]string, error) {
 		return nil, err
 	}
 	return foodTypes, nil
+}
+func (s *service) GetDishesByRestaurantID(id int) ([]model.Dish, error) {
+	dishes, err := s.repo.FindDishesByRestaurantID(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get dishes by restaurant ID")
+		return nil, err
+	}
+	return dishes, nil
+}
+
+func (s *service) GetFoodTypesByRestaurantID(id int) ([]string, error) {
+	foodTypes, err := s.repo.FindFoodTypesByRestaurantID(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get food types by restaurant ID")
+		return nil, err
+	}
+	return foodTypes, nil
+}
+
+func (s *service) GetRestaurantDetail(id int) (*model.RestaurantDetail, error) {
+	restaurant, err := s.GetRestaurantByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	dishes, err := s.GetDishesByRestaurantID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	foodTypes, err := s.GetFoodTypesByRestaurantID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	restaurantDetail := &model.RestaurantDetail{
+		Restaurant: *restaurant,
+		Dishes:     dishes,
+		FoodTypes:  foodTypes,
+	}
+
+	return restaurantDetail, nil
 }
