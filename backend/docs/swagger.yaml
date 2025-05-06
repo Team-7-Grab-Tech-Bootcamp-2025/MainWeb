@@ -29,24 +29,35 @@ definitions:
         type: string
     type: object
   model.Restaurant:
+    description: Restaurant represents a restaurant with its details This struct is
+      used to represent a restaurant in the system
     properties:
       address:
+        description: Address of the restaurant
         type: string
       city:
+        description: City where the restaurant is located
         type: string
       district:
+        description: District where the restaurant is located
         type: string
       id:
+        description: Unique identifier of the restaurant
         type: integer
       latitude:
+        description: Latitude and longitude coordinates of the restaurant
         type: number
       longitude:
+        description: Longitude of the restaurant
         type: number
       name:
+        description: Name of the restaurant
         type: string
       rating:
+        description: Overall rating of the restaurant
         type: number
       review_count:
+        description: Number of reviews for the restaurant
         type: integer
     type: object
   model.Todo:
