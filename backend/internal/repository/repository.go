@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"math"
 	"skeleton-internship-backend/internal/model"
 
 	"github.com/rs/zerolog/log"
@@ -18,6 +19,8 @@ type Repository interface {
 	FindAllFoodTypes() ([]string, error)
 	FindDishesByRestaurantID(id int) ([]model.Dish, error)
 	FindFoodTypesByRestaurantID(id int) ([]string, error)
+	CalculateDistance(lat1, lon1, lat2, lon2 float64) float64
+	CalculateLabelsRating(id int) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
 }
 
 type repository struct {
@@ -162,4 +165,61 @@ func (r *repository) FindFoodTypesByRestaurantID(id int) ([]string, error) {
 	}
 
 	return foodTypes, nil
+}
+
+func (r *repository) CalculateDistance(lat1, lon1, lat2, lon2 float64) float64 {
+	// Haversine formula to calculate the distance between two points on the Earth
+	const R = 6371 // Radius of the Earth in kilometers
+	dLat := (lat2 - lat1) * (3.141592653589793 / 180)
+	dLon := (lon2 - lon1) * (3.141592653589793 / 180)
+	a := (math.Sin(dLat/2) * math.Sin(dLat/2)) + (math.Cos(lat1*(math.Pi/180)) * math.Cos(lat2*(math.Pi/180)) * math.Sin(dLon/2) * math.Sin(dLon/2))
+	c := 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+
+	return R * c // Distance in kilometers
+}
+
+func (r *repository) CalculateLabelsRating(id int) (float64, int, float64, int, float64, int, float64, int, float64, int, error) {
+	query := `SELECT label, AVG(rating_label), COUNT(rating_label) 
+	FROM Review JOIN Feedback_label ON Review.rating_id = Feedback_label.rating_id 
+	WHERE restaurant_id = ? GROUP BY label`
+	rows, err := r.db.Query(query, id)
+	if err != nil {
+		log.Error().Err(err).Msg("Error executing query to calculate labels rating")
+		return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, err
+	}
+	defer rows.Close()
+
+	// Default values
+	var ambienceRating, deliveryRating, foodRating, priceRating, serviceRating float64
+	var ambienceCount, deliveryCount, foodCount, priceCount, serviceCount int
+
+	for rows.Next() {
+		var label string
+		var rating float64
+		var count int
+		if err := rows.Scan(&label, &rating, &count); err != nil {
+			log.Error().Err(err).Msg("Error scanning label rating data")
+			return 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, err
+		}
+
+		switch label {
+		case "Ambience":
+			ambienceRating = rating
+			ambienceCount = count
+		case "Delivery":
+			deliveryRating = rating
+			deliveryCount = count
+		case "Food":
+			foodRating = rating
+			foodCount = count
+		case "Price":
+			priceRating = rating
+			priceCount = count
+		case "Service":
+			serviceRating = rating
+			serviceCount = count
+		}
+	}
+
+	return ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, nil
 }
