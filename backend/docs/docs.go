@@ -24,6 +24,106 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/foodtypes": {
+            "get": {
+                "description": "get all food types",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "foodtypes"
+                ],
+                "summary": "Get all food types",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/restaurants/{id}": {
+            "get": {
+                "description": "get restaurant by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Get a restaurant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Restaurant"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/todos": {
             "get": {
                 "description": "get all todos",
@@ -345,6 +445,48 @@ const docTemplate = `{
                 "data": {},
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "model.Restaurant": {
+            "description": "This struct is used to represent a restaurant in the system",
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Address of the restaurant",
+                    "type": "string"
+                },
+                "city_id": {
+                    "description": "City where the restaurant is located",
+                    "type": "string"
+                },
+                "district_id": {
+                    "description": "District where the restaurant is located",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "Unique identifier of the restaurant",
+                    "type": "integer"
+                },
+                "latitude": {
+                    "description": "Latitude and longitude coordinates of the restaurant",
+                    "type": "number"
+                },
+                "longitude": {
+                    "description": "Longitude of the restaurant",
+                    "type": "number"
+                },
+                "name": {
+                    "description": "Name of the restaurant",
+                    "type": "string"
+                },
+                "rating": {
+                    "description": "Overall rating of the restaurant",
+                    "type": "number"
+                },
+                "review_count": {
+                    "description": "Number of reviews for the restaurant",
+                    "type": "integer"
                 }
             }
         },

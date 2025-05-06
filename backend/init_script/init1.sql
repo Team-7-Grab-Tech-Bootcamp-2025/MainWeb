@@ -7,16 +7,25 @@ CREATE TABLE Platform (
     platform_name VARCHAR(100) NOT NULL
 );
 
--- Users table
-CREATE TABLE Users (
+-- User table
+CREATE TABLE User (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     user_name VARCHAR(100) NOT NULL,
     platform_id INT,
     FOREIGN KEY (platform_id) REFERENCES Platform(platform_id)
 );
 
+CREATE TABLE District (
+    district_id INT PRIMARY KEY,
+    district_name VARCHAR(100) NOT NULL
+);
+CREATE TABLE City (
+    city_id INT PRIMARY KEY,
+    city_name VARCHAR(100) NOT NULL
+);
+
 -- Restaurant Info table
-CREATE TABLE Restaurant_info (
+CREATE TABLE Restaurant (
     restaurant_id INT AUTO_INCREMENT PRIMARY KEY,
     restaurant_name VARCHAR(255) NOT NULL,
     latitude DECIMAL(10, 6),
@@ -24,40 +33,43 @@ CREATE TABLE Restaurant_info (
     address TEXT,
     restaurant_rating DECIMAL(3, 2),
     review_count INT DEFAULT 0,
-    city VARCHAR(255),
-    district VARCHAR(255)
+    city_id INT,
+    district_id INT,
+    FOREIGN KEY (city_id) REFERENCES City(city_id),
+    FOREIGN KEY (district_id) REFERENCES District(district_id)
 );
 
--- Dishes table
-CREATE TABLE Dishes (
+
+-- Dish table
+CREATE TABLE Dish (
     dish_id INT AUTO_INCREMENT PRIMARY KEY,
     item_name VARCHAR(255) NOT NULL,
     restaurant_id INT,
     category_id INT,
     category_name VARCHAR(100),
     price DECIMAL(10, 2),
-    FOREIGN KEY (restaurant_id) REFERENCES Restaurant_info(restaurant_id)
+    FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id)
 );
 
--- Reviews table
-CREATE TABLE Reviews (
+-- Review table
+CREATE TABLE Review (
     rating_id INT AUTO_INCREMENT PRIMARY KEY,
     restaurant_id INT,
     user_id INT,
     rating DECIMAL(2, 1),
     feedback TEXT,
     review_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (restaurant_id) REFERENCES Restaurant_info(restaurant_id),
-    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+    FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id),
+    FOREIGN KEY (user_id) REFERENCES User(user_id)
 );
 
--- Feedback Labels table
-CREATE TABLE Feedback_labels (
+-- Feedback Label table
+CREATE TABLE Feedback_label (
     feedback_label_id INT AUTO_INCREMENT PRIMARY KEY,
     label VARCHAR(100),
     rating_label DECIMAL(3, 2),
     rating_id INT,
-    FOREIGN KEY (rating_id) REFERENCES Reviews(rating_id)
+    FOREIGN KEY (rating_id) REFERENCES Review(rating_id)
 );
 
 -- Temp table
@@ -66,6 +78,14 @@ CREATE TABLE Temp (
     restaurant_id INT,
     platform_id INT,
     restaurant_rating DECIMAL(3, 2),
-    FOREIGN KEY (restaurant_id) REFERENCES Restaurant_info(restaurant_id),
+    FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id),
     FOREIGN KEY (platform_id) REFERENCES Platform(platform_id)
+);
+
+-- Food_type table
+CREATE TABLE Food_type (
+    food_type_id INT AUTO_INCREMENT PRIMARY KEY,
+    food_type_name VARCHAR(100) NOT NULL,
+    restaurant_id INT,
+    FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id)
 );

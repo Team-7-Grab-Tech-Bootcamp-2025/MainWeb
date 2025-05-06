@@ -1,15 +1,14 @@
 package database
 
 import (
+	"database/sql"
 	"fmt"
 	"skeleton-internship-backend/config"
-	"skeleton-internship-backend/internal/model"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func NewDB(cfg *config.Config) (*gorm.DB, error) {
+func NewDB(cfg *config.Config) (*sql.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		cfg.Database.User,
 		cfg.Database.Password,
@@ -18,14 +17,13 @@ func NewDB(cfg *config.Config) (*gorm.DB, error) {
 		cfg.Database.Name,
 	)
 
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := sql.Open("mysql", dsn)
 	if err != nil {
 		return nil, err
 	}
 
-	// Auto migrate the schema
-	err = db.AutoMigrate(&model.Todo{})
-	if err != nil {
+	// Verify the connection
+	if err := db.Ping(); err != nil {
 		return nil, err
 	}
 
