@@ -16,6 +16,8 @@ type Repository interface {
 	Delete(id uint) error
 	FindRestaurantByID(id int) (*model.Restaurant, error)
 	FindAllFoodTypes() ([]string, error)
+	FindDishesByRestaurantID(id int) ([]model.Dish, error)
+	FindFoodTypesByRestaurantID(id int) ([]string, error)
 }
 
 type repository struct {
@@ -101,6 +103,50 @@ func (r *repository) FindAllFoodTypes() ([]string, error) {
 	rows, err := r.db.Query(query)
 	if err != nil {
 		log.Error().Err(err).Msg("Error executing query to find all food types")
+		return nil, err
+	}
+	defer rows.Close()
+
+	var foodTypes []string
+	for rows.Next() {
+		var foodType string
+		if err := rows.Scan(&foodType); err != nil {
+			log.Error().Err(err).Msg("Error scanning food type data")
+			return nil, err
+		}
+		foodTypes = append(foodTypes, foodType)
+	}
+
+	return foodTypes, nil
+}
+
+func (r *repository) FindDishesByRestaurantID(id int) ([]model.Dish, error) {
+	query := "SELECT item_name, price FROM Dish WHERE restaurant_id = ?"
+	rows, err := r.db.Query(query, id)
+	if err != nil {
+		log.Error().Err(err).Msg("Error executing query to find dishes by restaurant ID")
+		return nil, err
+	}
+	defer rows.Close()
+
+	var dishes []model.Dish
+	for rows.Next() {
+		var dish model.Dish
+		if err := rows.Scan(&dish.Name, &dish.Price); err != nil {
+			log.Error().Err(err).Msg("Error scanning dish data")
+			return nil, err
+		}
+		dishes = append(dishes, dish)
+	}
+
+	return dishes, nil
+}
+
+func (r *repository) FindFoodTypesByRestaurantID(id int) ([]string, error) {
+	query := "SELECT food_type_name FROM Food_type WHERE restaurant_id = ?"
+	rows, err := r.db.Query(query, id)
+	if err != nil {
+		log.Error().Err(err).Msg("Error executing query to find food types by restaurant ID")
 		return nil, err
 	}
 	defer rows.Close()

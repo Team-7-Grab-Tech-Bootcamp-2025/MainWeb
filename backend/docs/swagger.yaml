@@ -22,6 +22,16 @@ definitions:
     required:
     - title
     type: object
+  model.Dish:
+    description: This struct is used to represent a dish in the system
+    properties:
+      name:
+        description: Name of the dish
+        type: string
+      price:
+        description: Price of the dish
+        type: number
+    type: object
   model.Response:
     properties:
       data: {}
@@ -58,6 +68,21 @@ definitions:
       review_count:
         description: Number of reviews for the restaurant
         type: integer
+    type: object
+  model.RestaurantDetail:
+    properties:
+      dishes:
+        description: List of dishes available at the restaurant
+        items:
+          $ref: '#/definitions/model.Dish'
+        type: array
+      food_types:
+        description: List of food types available at the restaurant
+        items:
+          type: string
+        type: array
+      restaurant:
+        $ref: '#/definitions/model.Restaurant'
     type: object
   model.Todo:
     description: Todo represents a single todo item with its details
@@ -154,7 +179,7 @@ paths:
             - $ref: '#/definitions/model.Response'
             - properties:
                 data:
-                  $ref: '#/definitions/model.Restaurant'
+                  $ref: '#/definitions/model.RestaurantDetail'
               type: object
         "400":
           description: Bad Request

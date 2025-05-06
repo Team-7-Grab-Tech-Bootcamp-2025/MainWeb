@@ -102,7 +102,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/model.Restaurant"
+                                            "$ref": "#/definitions/model.RestaurantDetail"
                                         }
                                     }
                                 }
@@ -439,6 +439,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Dish": {
+            "description": "This struct is used to represent a dish in the system",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Name of the dish",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "Price of the dish",
+                    "type": "number"
+                }
+            }
+        },
         "model.Response": {
             "type": "object",
             "properties": {
@@ -487,6 +501,28 @@ const docTemplate = `{
                 "review_count": {
                     "description": "Number of reviews for the restaurant",
                     "type": "integer"
+                }
+            }
+        },
+        "model.RestaurantDetail": {
+            "type": "object",
+            "properties": {
+                "dishes": {
+                    "description": "List of dishes available at the restaurant",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Dish"
+                    }
+                },
+                "food_types": {
+                    "description": "List of food types available at the restaurant",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "restaurant": {
+                    "$ref": "#/definitions/model.Restaurant"
                 }
             }
         },

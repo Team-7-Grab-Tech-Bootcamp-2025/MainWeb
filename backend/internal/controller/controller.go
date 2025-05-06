@@ -38,7 +38,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 
 		restaurants := v1.Group("/restaurants")
 		{
-			restaurants.GET("/:id", c.GetRestaurantByID)
+			restaurants.GET("/:id", c.GetRestaurantDetailByID)
 		}
 		v1.GET("foodtypes", c.GetAllFoodTypes)
 	}
@@ -195,18 +195,18 @@ func (c *Controller) DeleteTodo(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.NewResponse("Todo deleted successfully", nil))
 }
 
-// GetRestaurantByID godoc
+// GetRestaurantDetailByID godoc
 // @Summary Get a restaurant
 // @Description get restaurant by ID
 // @Tags restaurants
 // @Accept json
 // @Produce json
 // @Param id path int true "Restaurant ID"
-// @Success 200 {object} model.Response{data=model.Restaurant}
+// @Success 200 {object} model.Response{data=model.RestaurantDetail}
 // @Failure 400 {object} model.Response
 // @Failure 404 {object} model.Response
 // @Router /api/v1/restaurants/{id} [get]
-func (c *Controller) GetRestaurantByID(ctx *gin.Context) {
+func (c *Controller) GetRestaurantDetailByID(ctx *gin.Context) {
 	log.Info().Msg("Fetching restaurant by ID")
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -214,17 +214,17 @@ func (c *Controller) GetRestaurantByID(ctx *gin.Context) {
 		return
 	}
 
-	restaurant, err := c.service.GetRestaurantByID(id)
+	restaurantDetail, err := c.service.GetRestaurantDetail(id)
 	if err != nil {
 		if err.Error() == "not found" {
 			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))
 		} else {
-			ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch restaurant", nil))
+			ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch restaurant details", nil))
 		}
 		return
 	}
 
-	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant fetched successfully", restaurant))
+	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant fetched successfully", restaurantDetail))
 }
 
 // GetAllFoodTypes godoc
