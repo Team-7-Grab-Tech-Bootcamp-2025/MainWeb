@@ -15,6 +15,7 @@ type Repository interface {
 	Update(todo *model.Todo) error
 	Delete(id uint) error
 	FindRestaurantByID(id int) (*model.Restaurant, error)
+	FindAllFoodTypes() ([]string, error)
 }
 
 type repository struct {
@@ -76,24 +77,6 @@ func (r *repository) Delete(id uint) error {
 	query := "DELETE FROM todos WHERE id = ?"
 	_, err := r.db.Exec(query, id)
 	return err
-}
-
-func (r *repository) FindRestaurantByID(id int) (*model.Restaurant, error) {
-	query := "SELECT restaurant_id, restaurant_name, latitude, longitude, address, restaurant_rating, review_count, city, district FROM Restaurant_info WHERE restaurant_id = ?"
-	row := r.db.QueryRow(query, id)
-
-	log.Info().Msgf("Executing query: %s with id: %d", query, id)
-
-	var restaurant model.Restaurant
-	if err := row.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Latitude, &restaurant.Longitude, &restaurant.Address, &restaurant.Rating, &restaurant.ReviewCount, &restaurant.City, &restaurant.District); err != nil {
-		if err == sql.ErrNoRows {
-			return nil, errors.New("not found")
-		}
-		log.Error().Err(err).Msg("Error scanning restaurant data")
-		return nil, err
-	}
-
-	return &restaurant, nil
 }
 
 func (r *repository) FindRestaurantByID(id int) (*model.Restaurant, error) {
