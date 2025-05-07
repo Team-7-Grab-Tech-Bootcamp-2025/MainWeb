@@ -86,13 +86,13 @@ func (r *repository) Delete(id uint) error {
 }
 
 func (r *repository) FindRestaurantByID(id int) (*model.Restaurant, error) {
-	query := "SELECT restaurant_id, restaurant_name, latitude, longitude, address, restaurant_rating, review_count, city_id, district_id FROM Restaurant WHERE restaurant_id = ?"
+	query := "SELECT restaurant_id, restaurant_name, latitude, longitude, address, restaurant_rating, review_count, city_id, district_id, Food_type.food_type_name FROM Restaurant JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id WHERE restaurant_id = ?"
 	row := r.db.QueryRow(query, id)
 
 	log.Info().Msgf("Executing query: %s with id: %d", query, id)
 
 	var restaurant model.Restaurant
-	if err := row.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Latitude, &restaurant.Longitude, &restaurant.Address, &restaurant.Rating, &restaurant.ReviewCount, &restaurant.CityID, &restaurant.DistrictID); err != nil {
+	if err := row.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Latitude, &restaurant.Longitude, &restaurant.Address, &restaurant.Rating, &restaurant.ReviewCount, &restaurant.CityID, &restaurant.DistrictID, &restaurant.FoodType); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("not found")
 		}

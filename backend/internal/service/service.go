@@ -18,7 +18,7 @@ type Service interface {
 	GetRestaurantByID(id int) (*model.Restaurant, error)
 	GetAllFoodTypes() ([]string, error)
 	GetDishesByRestaurantID(id int) ([]model.Dish, error)
-	GetFoodTypesByRestaurantID(id int) ([]string, error)
+	// GetFoodTypesByRestaurantID(id int) ([]string, error)
 	GetLabelsRating(id int) (*model.LabelsRating, error)
 	GetRestaurantDetail(id int) (*model.RestaurantDetail, error)
 }
@@ -123,14 +123,14 @@ func (s *service) GetDishesByRestaurantID(id int) ([]model.Dish, error) {
 	return dishes, nil
 }
 
-func (s *service) GetFoodTypesByRestaurantID(id int) ([]string, error) {
-	foodTypes, err := s.repo.FindFoodTypesByRestaurantID(id)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get food types by restaurant ID")
-		return nil, err
-	}
-	return foodTypes, nil
-}
+// func (s *service) GetFoodTypesByRestaurantID(id int) ([]string, error) {
+// 	foodTypes, err := s.repo.FindFoodTypesByRestaurantID(id)
+// 	if err != nil {
+// 		log.Error().Err(err).Msg("Failed to get food types by restaurant ID")
+// 		return nil, err
+// 	}
+// 	return foodTypes, nil
+// }
 
 func (s *service) GetLabelsRating(id int) (*model.LabelsRating, error) {
 	ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, err := s.repo.CalculateLabelsRating(id)
@@ -175,12 +175,6 @@ func (s *service) GetRestaurantDetail(id int) (*model.RestaurantDetail, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	foodTypes, err := s.GetFoodTypesByRestaurantID(id)
-	if err != nil {
-		return nil, err
-	}
-
 	labelsRating, err := s.GetLabelsRating(id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get labels rating")
@@ -196,7 +190,6 @@ func (s *service) GetRestaurantDetail(id int) (*model.RestaurantDetail, error) {
 	restaurantDetail := &model.RestaurantDetail{
 		Restaurant:      *restaurant,
 		Dishes:          dishes,
-		FoodTypes:       foodTypes,
 		Labels:          *labelsRating,
 		Platforms:       platforms,
 		RatingPlatforms: ratings,
