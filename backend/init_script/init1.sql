@@ -4,7 +4,7 @@ USE angi_db;
 -- Platform table
 CREATE TABLE Platform (
     platform_id INT AUTO_INCREMENT PRIMARY KEY,
-    platform_name VARCHAR(100) NOT NULL
+    platform_name VARCHAR(100) NOT NULL UNIQUE
 );
 
 -- User table
@@ -15,13 +15,22 @@ CREATE TABLE User (
     FOREIGN KEY (platform_id) REFERENCES Platform(platform_id)
 );
 
+-- District table
 CREATE TABLE District (
     district_id INT PRIMARY KEY,
-    district_name VARCHAR(100) NOT NULL
+    district_name VARCHAR(100) NOT NULL UNIQUE
 );
+
+-- City table
 CREATE TABLE City (
     city_id INT PRIMARY KEY,
-    city_name VARCHAR(100) NOT NULL
+    city_name VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- Food_type table
+CREATE TABLE Food_type (
+    food_type_id INT AUTO_INCREMENT PRIMARY KEY,
+    food_type_name VARCHAR(100) NOT NULL UNIQUE
 );
 
 -- Restaurant Info table
@@ -35,8 +44,10 @@ CREATE TABLE Restaurant (
     review_count INT DEFAULT 0,
     city_id INT,
     district_id INT,
+    food_type_id INT,
     FOREIGN KEY (city_id) REFERENCES City(city_id),
-    FOREIGN KEY (district_id) REFERENCES District(district_id)
+    FOREIGN KEY (district_id) REFERENCES District(district_id),
+    FOREIGN KEY (food_type_id) REFERENCES Food_type(food_type_id)
 );
 
 
@@ -80,12 +91,4 @@ CREATE TABLE Temp (
     restaurant_rating DECIMAL(3, 2),
     FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id),
     FOREIGN KEY (platform_id) REFERENCES Platform(platform_id)
-);
-
--- Food_type table
-CREATE TABLE Food_type (
-    food_type_id INT AUTO_INCREMENT PRIMARY KEY,
-    food_type_name VARCHAR(100) NOT NULL,
-    restaurant_id INT,
-    FOREIGN KEY (restaurant_id) REFERENCES Restaurant(restaurant_id)
 );

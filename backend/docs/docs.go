@@ -453,6 +453,37 @@ const docTemplate = `{
                 }
             }
         },
+        "model.LabelRating": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.LabelsRating": {
+            "type": "object",
+            "properties": {
+                "ambience": {
+                    "$ref": "#/definitions/model.LabelRating"
+                },
+                "delivery": {
+                    "$ref": "#/definitions/model.LabelRating"
+                },
+                "food": {
+                    "$ref": "#/definitions/model.LabelRating"
+                },
+                "price": {
+                    "$ref": "#/definitions/model.LabelRating"
+                },
+                "service": {
+                    "$ref": "#/definitions/model.LabelRating"
+                }
+            }
+        },
         "model.Response": {
             "type": "object",
             "properties": {
@@ -476,6 +507,10 @@ const docTemplate = `{
                 },
                 "district_id": {
                     "description": "District where the restaurant is located",
+                    "type": "string"
+                },
+                "food_type_name": {
+                    "description": "Food type name of the restaurant",
                     "type": "string"
                 },
                 "id": {
@@ -514,11 +549,26 @@ const docTemplate = `{
                         "$ref": "#/definitions/model.Dish"
                     }
                 },
-                "food_types": {
-                    "description": "List of food types available at the restaurant",
+                "labels": {
+                    "description": "Ratings for different aspects of the restaurant\nAmbience, delivery, food, price, and service ratings",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.LabelsRating"
+                        }
+                    ]
+                },
+                "platforms": {
+                    "description": "List of platforms where the restaurant is available",
                     "type": "array",
                     "items": {
                         "type": "string"
+                    }
+                },
+                "rating_platforms": {
+                    "description": "Ratings for the restaurant on different platforms\nThe length of this array should match the length of the Platforms array",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
                     }
                 },
                 "restaurant": {

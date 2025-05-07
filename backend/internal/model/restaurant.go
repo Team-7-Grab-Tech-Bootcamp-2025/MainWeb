@@ -21,12 +21,12 @@ type Restaurant struct {
 	CityID      string  `json:"city_id"`
 	// District where the restaurant is located
 	DistrictID  string  `json:"district_id"`
+	// Food type name of the restaurant
+	FoodType    string  `json:"food_type_name"`
 }
 
 type RestaurantDetail struct{
 	Restaurant Restaurant `json:"restaurant"`
-	// List of food types available at the restaurant
-	FoodTypes []string `json:"food_types"`
 	// List of dishes available at the restaurant
 	Dishes []Dish `json:"dishes"`
 	// Ratings for different aspects of the restaurant
