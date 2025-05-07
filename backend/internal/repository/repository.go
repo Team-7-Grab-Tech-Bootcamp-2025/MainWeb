@@ -21,6 +21,7 @@ type Repository interface {
 	FindFoodTypesByRestaurantID(id int) ([]string, error)
 	CalculateDistance(lat1, lon1, lat2, lon2 float64) float64
 	CalculateLabelsRating(id int) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
+	FindPlatformsAndRatingsByRestaurantID(id int) ([]string, []float64, error)
 }
 
 type repository struct {
@@ -222,4 +223,31 @@ func (r *repository) CalculateLabelsRating(id int) (float64, int, float64, int, 
 	}
 
 	return ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, nil
+}
+
+func (r *repository) FindPlatformsAndRatingsByRestaurantID(id int) ([]string, []float64, error) {
+	query := `SELECT Platform.platform_name, Temp.restaurant_rating 
+	FROM Temp JOIN Platform ON Temp.platform_id = Platform.platform_id 
+	WHERE Temp.restaurant_id = ?`
+	rows, err := r.db.Query(query, id)
+	if err != nil {
+		log.Error().Err(err).Msg("Error executing query to find platforms and ratings by restaurant ID")
+		return nil, nil, err
+	}
+	defer rows.Close()
+
+	var platforms []string
+	var ratings []float64
+	for rows.Next() {
+		var platform string
+		var rating float64
+		if err := rows.Scan(&platform, &rating); err != nil {
+			log.Error().Err(err).Msg("Error scanning platform and rating data")
+			return nil, nil, err
+		}
+		platforms = append(platforms, platform)
+		ratings = append(ratings, rating)
+	}
+
+	return platforms, ratings, nil
 }

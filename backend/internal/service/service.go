@@ -187,11 +187,19 @@ func (s *service) GetRestaurantDetail(id int) (*model.RestaurantDetail, error) {
 		return nil, err
 	}
 
+	platforms, ratings, err := s.repo.FindPlatformsAndRatingsByRestaurantID(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get platforms and ratings")
+		return nil, err
+	}
+
 	restaurantDetail := &model.RestaurantDetail{
-		Restaurant: *restaurant,
-		Dishes:     dishes,
-		FoodTypes:  foodTypes,
-		Labels:     *labelsRating,
+		Restaurant:      *restaurant,
+		Dishes:          dishes,
+		FoodTypes:       foodTypes,
+		Labels:          *labelsRating,
+		Platforms:       platforms,
+		RatingPlatforms: ratings,
 	}
 
 	return restaurantDetail, nil
