@@ -6,15 +6,15 @@ type Restaurant struct {
 	// Unique identifier of the restaurant
 	ID          int     `json:"id"`
 	// Name of the restaurant
-	Name        string  `json:"name,omitempty"`
+	Name        string  `json:"name"`
 	// Latitude and longitude coordinates of the restaurant
-	Latitude    float64 `json:"latitude,omitempty"`
+	Latitude    float64 `json:"latitude"`
 	// Longitude of the restaurant
-	Longitude   float64 `json:"longitude,omitempty"`
+	Longitude   float64 `json:"longitude"`
 	// Address of the restaurant
 	Address     string  `json:"address"`
 	// Overall rating of the restaurant
-	Rating      float64 `json:"rating,omitempty"`
+	Rating      float64 `json:"rating"`
 	// Number of reviews for the restaurant
 	ReviewCount int     `json:"review_count"`
 	// City where the restaurant is located
@@ -32,6 +32,11 @@ type RestaurantDetail struct{
 	// Ratings for different aspects of the restaurant
 	// Ambience, delivery, food, price, and service ratings
 	Labels LabelsRating `json:"labels"`
+	// List of platforms where the restaurant is available
+	Platforms []string `json:"platforms"`
+	// Ratings for the restaurant on different platforms
+	// The length of this array should match the length of the Platforms array
+	RatingPlatforms []float64 `json:"rating_platforms"`
 }
 
 type LabelRating struct {
