@@ -23,6 +23,8 @@ type Restaurant struct {
 	DistrictID  string  `json:"district_id"`
 	// Food type name of the restaurant
 	FoodType    string  `json:"food_type_name"`
+	// Distance from user's location in kilometers
+	Distance    float64 `json:"distance"`
 }
 
 type RestaurantDetail struct{

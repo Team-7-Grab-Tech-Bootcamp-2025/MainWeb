@@ -39,6 +39,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 		restaurants := v1.Group("/restaurants")
 		{
 			restaurants.GET("/:id", c.GetRestaurantDetailByID)
+			restaurants.GET("", c.GetNearbyRestaurants)
 		}
 		v1.GET("foodtypes", c.GetAllFoodTypes)
 	}
@@ -202,19 +203,47 @@ func (c *Controller) DeleteTodo(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Restaurant ID"
+// @Param lat query number false "Latitude" (optional)
+// @Param lng query number false "Longitude" (optional)
 // @Success 200 {object} model.Response{data=model.RestaurantDetail}
 // @Failure 400 {object} model.Response
 // @Failure 404 {object} model.Response
 // @Router /api/v1/restaurants/{id} [get]
 func (c *Controller) GetRestaurantDetailByID(ctx *gin.Context) {
+
 	log.Info().Msg("Fetching restaurant by ID")
+
+	var lat, lng float64
+	var err error
+
+	// Get query parameters
+	latStr := ctx.Query("lat")
+	lngStr := ctx.Query("lng")
+
+	// Parse lat/lng if provided, otherwise use 0 (which will sort by rating only)
+	if latStr != "" {
+		lat, err = strconv.ParseFloat(latStr, 64)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid latitude format", nil))
+			return
+		}
+	}
+
+	if lngStr != "" {
+		lng, err = strconv.ParseFloat(lngStr, 64)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid longitude format", nil))
+			return
+		}
+	}
+
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
 		return
 	}
 
-	restaurantDetail, err := c.service.GetRestaurantDetail(id)
+	restaurantDetail, err := c.service.GetRestaurantDetail(id, lat, lng)
 	if err != nil {
 		if err.Error() == "not found" {
 			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))
@@ -245,4 +274,69 @@ func (c *Controller) GetAllFoodTypes(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, model.NewResponse("Food types fetched successfully", foodTypes))
+}
+
+// GetNearbyRestaurants godoc
+// @Summary Get nearby restaurants
+// @Description get top rated restaurants near specified coordinates
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Param lat query number false "Latitude" (optional)
+// @Param lng query number false "Longitude" (optional)
+// @Param limit query int false "Limit results" default(10)
+// @Success 200 {object} model.Response{data=[]model.Restaurant}
+// @Failure 400 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /api/v1/restaurants [get]
+func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
+	log.Info().Msg("Fetching nearby restaurants")
+
+	var lat, lng float64
+	var err error
+
+	// Get query parameters
+	latStr := ctx.Query("lat")
+	lngStr := ctx.Query("lng")
+	limitStr := ctx.DefaultQuery("limit", "10")
+
+	// Parse lat/lng if provided, otherwise use 0 (which will sort by rating only)
+	if latStr != "" {
+		lat, err = strconv.ParseFloat(latStr, 64)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid latitude format", nil))
+			return
+		}
+	}
+
+	if lngStr != "" {
+		lng, err = strconv.ParseFloat(lngStr, 64)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid longitude format", nil))
+			return
+		}
+	}
+
+	// Parse limit
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 10 // Default limit
+	}
+
+	// Get restaurants, either by distance or just by rating if no coordinates
+	restaurants, err := c.service.GetNearbyRestaurants(lat, lng, limit)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch restaurants", nil))
+		return
+	}
+
+	// If no lat/lng provided, we're returning top rated restaurants
+	var message string
+	if latStr == "" || lngStr == "" {
+		message = "Top rated restaurants fetched successfully"
+	} else {
+		message = "Nearby restaurants fetched successfully"
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse(message, restaurants))
 }
