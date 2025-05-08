@@ -67,6 +67,9 @@ definitions:
       city_id:
         description: City where the restaurant is located
         type: string
+      distance:
+        description: Distance from user's location in kilometers
+        type: number
       district_id:
         description: District where the restaurant is located
         type: string
@@ -194,6 +197,50 @@ paths:
       summary: Get all food types
       tags:
       - foodtypes
+  /api/v1/restaurants:
+    get:
+      consumes:
+      - application/json
+      description: get top rated restaurants near specified coordinates
+      parameters:
+      - description: Latitude
+        in: query
+        name: lat
+        type: number
+      - description: Longitude
+        in: query
+        name: lng
+        type: number
+      - default: 10
+        description: Limit results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Restaurant'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get nearby restaurants
+      tags:
+      - restaurants
   /api/v1/restaurants/{id}:
     get:
       consumes:
@@ -205,6 +252,14 @@ paths:
         name: id
         required: true
         type: integer
+      - description: Latitude
+        in: query
+        name: lat
+        type: number
+      - description: Longitude
+        in: query
+        name: lng
+        type: number
       produces:
       - application/json
       responses:
