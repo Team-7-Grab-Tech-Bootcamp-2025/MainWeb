@@ -24,6 +24,189 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/v1/foodtypes": {
+            "get": {
+                "description": "get all food types",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "foodtypes"
+                ],
+                "summary": "Get all food types",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/restaurants": {
+            "get": {
+                "description": "get top rated restaurants near specified coordinates",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Get nearby restaurants",
+                "parameters": [
+                    {
+                        "type": "number",
+                        "description": "Latitude",
+                        "name": "lat",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Longitude",
+                        "name": "lng",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit results",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Restaurant"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/restaurants/{id}": {
+            "get": {
+                "description": "get restaurant by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Get a restaurant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Latitude",
+                        "name": "lat",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "description": "Longitude",
+                        "name": "lng",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.RestaurantDetail"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/todos": {
             "get": {
                 "description": "get all todos",
@@ -297,7 +480,7 @@ const docTemplate = `{
                 "tags": [
                     "health"
                 ],
-                "summary": "Show the status of server.",
+                "summary": "Show the status of server. HELLO NONO",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -339,12 +522,144 @@ const docTemplate = `{
                 }
             }
         },
+        "model.Dish": {
+            "description": "This struct is used to represent a dish in the system",
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "Name of the dish",
+                    "type": "string"
+                },
+                "price": {
+                    "description": "Price of the dish",
+                    "type": "number"
+                }
+            }
+        },
+        "model.LabelRating": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "rating": {
+                    "type": "number"
+                }
+            }
+        },
+        "model.LabelsRating": {
+            "type": "object",
+            "properties": {
+                "ambience": {
+                    "$ref": "#/definitions/model.LabelRating"
+                },
+                "delivery": {
+                    "$ref": "#/definitions/model.LabelRating"
+                },
+                "food": {
+                    "$ref": "#/definitions/model.LabelRating"
+                },
+                "price": {
+                    "$ref": "#/definitions/model.LabelRating"
+                },
+                "service": {
+                    "$ref": "#/definitions/model.LabelRating"
+                }
+            }
+        },
         "model.Response": {
             "type": "object",
             "properties": {
                 "data": {},
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "model.Restaurant": {
+            "description": "This struct is used to represent a restaurant in the system",
+            "type": "object",
+            "properties": {
+                "address": {
+                    "description": "Address of the restaurant",
+                    "type": "string"
+                },
+                "city_id": {
+                    "description": "City where the restaurant is located",
+                    "type": "string"
+                },
+                "distance": {
+                    "description": "Distance from user's location in kilometers",
+                    "type": "number"
+                },
+                "district_id": {
+                    "description": "District where the restaurant is located",
+                    "type": "string"
+                },
+                "food_type_name": {
+                    "description": "Food type name of the restaurant",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "Unique identifier of the restaurant",
+                    "type": "integer"
+                },
+                "latitude": {
+                    "description": "Latitude and longitude coordinates of the restaurant",
+                    "type": "number"
+                },
+                "longitude": {
+                    "description": "Longitude of the restaurant",
+                    "type": "number"
+                },
+                "name": {
+                    "description": "Name of the restaurant",
+                    "type": "string"
+                },
+                "rating": {
+                    "description": "Overall rating of the restaurant",
+                    "type": "number"
+                },
+                "review_count": {
+                    "description": "Number of reviews for the restaurant",
+                    "type": "integer"
+                }
+            }
+        },
+        "model.RestaurantDetail": {
+            "type": "object",
+            "properties": {
+                "dishes": {
+                    "description": "List of dishes available at the restaurant",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.Dish"
+                    }
+                },
+                "labels": {
+                    "description": "Ratings for different aspects of the restaurant\nAmbience, delivery, food, price, and service ratings",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.LabelsRating"
+                        }
+                    ]
+                },
+                "platforms": {
+                    "description": "List of platforms where the restaurant is available",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rating_platforms": {
+                    "description": "Ratings for the restaurant on different platforms\nThe length of this array should match the length of the Platforms array",
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "restaurant": {
+                    "$ref": "#/definitions/model.Restaurant"
                 }
             }
         },
@@ -418,7 +733,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	BasePath:         "/",
 	Schemes:          []string{"http", "https"},
 	Title:            "Todo List API",
 	Description:      "A modern RESTful API for managing your todos efficiently. This API provides comprehensive endpoints for creating, reading, updating, and deleting todo items.",

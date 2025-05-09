@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /
 definitions:
   dto.TodoCreate:
     description: Todo creation request body
@@ -22,11 +22,106 @@ definitions:
     required:
     - title
     type: object
+  model.Dish:
+    description: This struct is used to represent a dish in the system
+    properties:
+      name:
+        description: Name of the dish
+        type: string
+      price:
+        description: Price of the dish
+        type: number
+    type: object
+  model.LabelRating:
+    properties:
+      count:
+        type: integer
+      rating:
+        type: number
+    type: object
+  model.LabelsRating:
+    properties:
+      ambience:
+        $ref: '#/definitions/model.LabelRating'
+      delivery:
+        $ref: '#/definitions/model.LabelRating'
+      food:
+        $ref: '#/definitions/model.LabelRating'
+      price:
+        $ref: '#/definitions/model.LabelRating'
+      service:
+        $ref: '#/definitions/model.LabelRating'
+    type: object
   model.Response:
     properties:
       data: {}
       message:
         type: string
+    type: object
+  model.Restaurant:
+    description: This struct is used to represent a restaurant in the system
+    properties:
+      address:
+        description: Address of the restaurant
+        type: string
+      city_id:
+        description: City where the restaurant is located
+        type: string
+      distance:
+        description: Distance from user's location in kilometers
+        type: number
+      district_id:
+        description: District where the restaurant is located
+        type: string
+      food_type_name:
+        description: Food type name of the restaurant
+        type: string
+      id:
+        description: Unique identifier of the restaurant
+        type: integer
+      latitude:
+        description: Latitude and longitude coordinates of the restaurant
+        type: number
+      longitude:
+        description: Longitude of the restaurant
+        type: number
+      name:
+        description: Name of the restaurant
+        type: string
+      rating:
+        description: Overall rating of the restaurant
+        type: number
+      review_count:
+        description: Number of reviews for the restaurant
+        type: integer
+    type: object
+  model.RestaurantDetail:
+    properties:
+      dishes:
+        description: List of dishes available at the restaurant
+        items:
+          $ref: '#/definitions/model.Dish'
+        type: array
+      labels:
+        allOf:
+        - $ref: '#/definitions/model.LabelsRating'
+        description: |-
+          Ratings for different aspects of the restaurant
+          Ambience, delivery, food, price, and service ratings
+      platforms:
+        description: List of platforms where the restaurant is available
+        items:
+          type: string
+        type: array
+      rating_platforms:
+        description: |-
+          Ratings for the restaurant on different platforms
+          The length of this array should match the length of the Platforms array
+        items:
+          type: number
+        type: array
+      restaurant:
+        $ref: '#/definitions/model.Restaurant'
     type: object
   model.Todo:
     description: Todo represents a single todo item with its details
@@ -76,6 +171,118 @@ info:
   title: Todo List API
   version: "1.0"
 paths:
+  /api/v1/foodtypes:
+    get:
+      consumes:
+      - application/json
+      description: get all food types
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    type: string
+                  type: array
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get all food types
+      tags:
+      - foodtypes
+  /api/v1/restaurants:
+    get:
+      consumes:
+      - application/json
+      description: get top rated restaurants near specified coordinates
+      parameters:
+      - description: Latitude
+        in: query
+        name: lat
+        type: number
+      - description: Longitude
+        in: query
+        name: lng
+        type: number
+      - default: 10
+        description: Limit results
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Restaurant'
+                  type: array
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get nearby restaurants
+      tags:
+      - restaurants
+  /api/v1/restaurants/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get restaurant by ID
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Latitude
+        in: query
+        name: lat
+        type: number
+      - description: Longitude
+        in: query
+        name: lng
+        type: number
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.RestaurantDetail'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get a restaurant
+      tags:
+      - restaurants
   /api/v1/todos:
     get:
       consumes:
@@ -249,7 +456,7 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/model.Response'
-      summary: Show the status of server.
+      summary: Show the status of server. HELLO NONO
       tags:
       - health
 schemes:

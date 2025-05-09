@@ -5,6 +5,8 @@ import (
 	"skeleton-internship-backend/internal/dto"
 	"skeleton-internship-backend/internal/model"
 	"skeleton-internship-backend/internal/repository"
+
+	"github.com/rs/zerolog/log"
 )
 
 type Service interface {
@@ -13,6 +15,13 @@ type Service interface {
 	GetTodoByID(id uint) (*model.Todo, error)
 	UpdateTodo(id uint, input *dto.TodoCreate) (*model.Todo, error)
 	DeleteTodo(id uint) error
+	GetRestaurantByID(id int, lat float64, lng float64) (*model.Restaurant, error)
+	GetAllFoodTypes() ([]string, error)
+	GetDishesByRestaurantID(id int) ([]model.Dish, error)
+	// GetFoodTypesByRestaurantID(id int) ([]string, error)
+	GetLabelsRating(id int) (*model.LabelsRating, error)
+	GetRestaurantDetail(id int, lat float64, lng float64) (*model.RestaurantDetail, error)
+	GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 }
 
 type service struct {
@@ -85,4 +94,117 @@ func (s *service) DeleteTodo(id uint) error {
 	}
 
 	return s.repo.Delete(id)
+}
+
+func (s *service) GetRestaurantByID(id int, lat float64, lng float64) (*model.Restaurant, error) {
+	log.Info().Msgf("Fetching restaurant with ID: %d", id)
+	restaurant, err := s.repo.FindRestaurantByID(id, lat, lng)
+	log.Info().Msgf("Restaurant found: %+v", restaurant)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to find restaurant by ID")
+		return nil, err
+	}
+	return restaurant, nil
+}
+
+func (s *service) GetAllFoodTypes() ([]string, error) {
+	foodTypes, err := s.repo.FindAllFoodTypes()
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get all food types")
+		return nil, err
+	}
+	return foodTypes, nil
+}
+func (s *service) GetDishesByRestaurantID(id int) ([]model.Dish, error) {
+	dishes, err := s.repo.FindDishesByRestaurantID(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get dishes by restaurant ID")
+		return nil, err
+	}
+	return dishes, nil
+}
+
+// func (s *service) GetFoodTypesByRestaurantID(id int) ([]string, error) {
+// 	foodTypes, err := s.repo.FindFoodTypesByRestaurantID(id)
+// 	if err != nil {
+// 		log.Error().Err(err).Msg("Failed to get food types by restaurant ID")
+// 		return nil, err
+// 	}
+// 	return foodTypes, nil
+// }
+
+func (s *service) GetLabelsRating(id int) (*model.LabelsRating, error) {
+	ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, err := s.repo.CalculateLabelsRating(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to calculate labels rating")
+		return nil, err
+	}
+
+	labelsRating := &model.LabelsRating{
+		Ambience: model.LabelRating{
+			Rating: ambienceRating,
+			Count:  ambienceCount,
+		},
+		Delivery: model.LabelRating{
+			Rating: deliveryRating,
+			Count:  deliveryCount,
+		},
+		Food: model.LabelRating{
+			Rating: foodRating,
+			Count:  foodCount,
+		},
+		Price: model.LabelRating{
+			Rating: priceRating,
+			Count:  priceCount,
+		},
+		Service: model.LabelRating{
+			Rating: serviceRating,
+			Count:  serviceCount,
+		},
+	}
+
+	return labelsRating, nil
+}
+
+func (s *service) GetRestaurantDetail(id int, lat float64, lng float64) (*model.RestaurantDetail, error) {
+	restaurant, err := s.GetRestaurantByID(id, lat, lng)
+	if err != nil {
+		return nil, err
+	}
+
+	dishes, err := s.GetDishesByRestaurantID(id)
+	if err != nil {
+		return nil, err
+	}
+	labelsRating, err := s.GetLabelsRating(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get labels rating")
+		return nil, err
+	}
+
+	platforms, ratings, err := s.repo.FindPlatformsAndRatingsByRestaurantID(id)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get platforms and ratings")
+		return nil, err
+	}
+
+	restaurantDetail := &model.RestaurantDetail{
+		Restaurant:      *restaurant,
+		Dishes:          dishes,
+		Labels:          *labelsRating,
+		Platforms:       platforms,
+		RatingPlatforms: ratings,
+	}
+
+	return restaurantDetail, nil
+}
+
+func (s *service) GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error) {
+	log.Info().Msgf("Finding nearby restaurants at coordinates (%f, %f) with limit %d", lat, lng, limit)
+	restaurants, err := s.repo.FindNearbyRestaurants(lat, lng, limit)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to find nearby restaurants")
+		return nil, err
+	}
+	return restaurants, nil
 }

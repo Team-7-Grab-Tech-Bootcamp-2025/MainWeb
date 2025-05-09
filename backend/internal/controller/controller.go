@@ -23,6 +23,7 @@ func NewController(service service.Service) *Controller {
 }
 
 func (c *Controller) RegisterRoutes(router *gin.Engine) {
+	log.Info().Msg("Registering routes")
 	router.GET("/health", c.HealthCheck)
 	v1 := router.Group("/api/v1")
 	{
@@ -34,11 +35,18 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 			todos.PUT("/:id", c.UpdateTodo)
 			todos.DELETE("/:id", c.DeleteTodo)
 		}
+
+		restaurants := v1.Group("/restaurants")
+		{
+			restaurants.GET("/:id", c.GetRestaurantDetailByID)
+			restaurants.GET("", c.GetNearbyRestaurants)
+		}
+		v1.GET("foodtypes", c.GetAllFoodTypes)
 	}
 }
 
 // HealthCheck godoc
-// @Summary Show the status of server.
+// @Summary Show the status of server. HELLO NONO
 // @Description get the status of server.
 // @Tags health
 // @Accept */*
@@ -60,6 +68,7 @@ func (x *Controller) HealthCheck(ctx *gin.Context) {
 // @Failure 500 {object} model.Response
 // @Router /api/v1/todos [get]
 func (c *Controller) GetAllTodos(ctx *gin.Context) {
+	log.Info().Msg("Fetching all todos")
 	todos, err := c.service.GetAllTodos()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch todos", nil))
@@ -81,6 +90,7 @@ func (c *Controller) GetAllTodos(ctx *gin.Context) {
 // @Failure 404 {object} model.Response
 // @Router /api/v1/todos/{id} [get]
 func (c *Controller) GetTodoByID(ctx *gin.Context) {
+	log.Info().Msg("Fetching todo by ID")
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
@@ -108,6 +118,7 @@ func (c *Controller) GetTodoByID(ctx *gin.Context) {
 // @Failure 500 {object} model.Response
 // @Router /api/v1/todos [post]
 func (c *Controller) CreateTodo(ctx *gin.Context) {
+	log.Info().Msg("Creating new todo")
 	var input dto.TodoCreate
 	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid input", nil))
@@ -136,6 +147,7 @@ func (c *Controller) CreateTodo(ctx *gin.Context) {
 // @Failure 500 {object} model.Response
 // @Router /api/v1/todos/{id} [put]
 func (c *Controller) UpdateTodo(ctx *gin.Context) {
+	log.Info().Msg("Updating todo")
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
@@ -169,6 +181,7 @@ func (c *Controller) UpdateTodo(ctx *gin.Context) {
 // @Failure 500 {object} model.Response
 // @Router /api/v1/todos/{id} [delete]
 func (c *Controller) DeleteTodo(ctx *gin.Context) {
+	log.Info().Msg("Deleting todo")
 	id, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
@@ -181,4 +194,149 @@ func (c *Controller) DeleteTodo(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, model.NewResponse("Todo deleted successfully", nil))
+}
+
+// GetRestaurantDetailByID godoc
+// @Summary Get a restaurant
+// @Description get restaurant by ID
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Param id path int true "Restaurant ID"
+// @Param lat query number false "Latitude" (optional)
+// @Param lng query number false "Longitude" (optional)
+// @Success 200 {object} model.Response{data=model.RestaurantDetail}
+// @Failure 400 {object} model.Response
+// @Failure 404 {object} model.Response
+// @Router /api/v1/restaurants/{id} [get]
+func (c *Controller) GetRestaurantDetailByID(ctx *gin.Context) {
+
+	log.Info().Msg("Fetching restaurant by ID")
+
+	var lat, lng float64
+	var err error
+
+	// Get query parameters
+	latStr := ctx.Query("lat")
+	lngStr := ctx.Query("lng")
+
+	// Parse lat/lng if provided, otherwise use 0 (which will sort by rating only)
+	if latStr != "" {
+		lat, err = strconv.ParseFloat(latStr, 64)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid latitude format", nil))
+			return
+		}
+	}
+
+	if lngStr != "" {
+		lng, err = strconv.ParseFloat(lngStr, 64)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid longitude format", nil))
+			return
+		}
+	}
+
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
+		return
+	}
+
+	restaurantDetail, err := c.service.GetRestaurantDetail(id, lat, lng)
+	if err != nil {
+		if err.Error() == "not found" {
+			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))
+		} else {
+			ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch restaurant details", nil))
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant fetched successfully", restaurantDetail))
+}
+
+// GetAllFoodTypes godoc
+// @Summary Get all food types
+// @Description get all food types
+// @Tags foodtypes
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Response{data=[]string}
+// @Failure 500 {object} model.Response
+// @Router /api/v1/foodtypes [get]
+func (c *Controller) GetAllFoodTypes(ctx *gin.Context) {
+	log.Info().Msg("Fetching all food types")
+	foodTypes, err := c.service.GetAllFoodTypes()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch food types", nil))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse("Food types fetched successfully", foodTypes))
+}
+
+// GetNearbyRestaurants godoc
+// @Summary Get nearby restaurants
+// @Description get top rated restaurants near specified coordinates
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Param lat query number false "Latitude" (optional)
+// @Param lng query number false "Longitude" (optional)
+// @Param limit query int false "Limit results" default(10)
+// @Success 200 {object} model.Response{data=[]model.Restaurant}
+// @Failure 400 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /api/v1/restaurants [get]
+func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
+	log.Info().Msg("Fetching nearby restaurants")
+
+	var lat, lng float64
+	var err error
+
+	// Get query parameters
+	latStr := ctx.Query("lat")
+	lngStr := ctx.Query("lng")
+	limitStr := ctx.DefaultQuery("limit", "10")
+
+	// Parse lat/lng if provided, otherwise use 0 (which will sort by rating only)
+	if latStr != "" {
+		lat, err = strconv.ParseFloat(latStr, 64)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid latitude format", nil))
+			return
+		}
+	}
+
+	if lngStr != "" {
+		lng, err = strconv.ParseFloat(lngStr, 64)
+		if err != nil {
+			ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid longitude format", nil))
+			return
+		}
+	}
+
+	// Parse limit
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 10 // Default limit
+	}
+
+	// Get restaurants, either by distance or just by rating if no coordinates
+	restaurants, err := c.service.GetNearbyRestaurants(lat, lng, limit)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch restaurants", nil))
+		return
+	}
+
+	// If no lat/lng provided, we're returning top rated restaurants
+	var message string
+	if latStr == "" || lngStr == "" {
+		message = "Top rated restaurants fetched successfully"
+	} else {
+		message = "Nearby restaurants fetched successfully"
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse(message, restaurants))
 }

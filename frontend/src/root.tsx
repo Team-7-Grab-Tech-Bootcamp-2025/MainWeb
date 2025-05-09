@@ -47,6 +47,7 @@ export function HydrateFallback() {
       <Flex className="min-h-screen" align="center" justify="center">
         <LoadingDot />
       </Flex>
+
     </ConfigProvider>
   );
 }
