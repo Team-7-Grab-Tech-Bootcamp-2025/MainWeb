@@ -1,3 +1,54 @@
 @layer theme, base, antd, components, utilities;
 
-@import 'tailwindcss';
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+
+:root {
+  --primary-color: #c99383;
+  --background-color: #e0dcd6;
+  --foreground-color: #112d4e;
+  --border-radius: 6px;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.05);
+}
+
+@theme {
+  --color-primary: var(--primary-color);
+  --color-background: var(--background-color);
+  --color-foreground: var(--foreground-color);
+}
+
+@layer base {
+  html {
+    font-family:
+      -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+      Arial, sans-serif;
+  }
+
+  body {
+    background-color: var(--background-color);
+    color: var(--foreground-color);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+}
+
+@layer utilities {
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0.75rem;
+  }
+}
+
+@import "tailwindcss/utilities.css" layer(utilities);
