@@ -1,44 +1,15 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Input, Select, Tooltip } from "antd";
-import { useSearch } from "../hooks/useSearch";
-
-const { Option } = Select;
-
-// Ho Chi Minh City districts
-const districts = [
-  "Quận 1",
-  "Quận 2",
-  "Quận 3",
-  "Quận 4",
-  "Quận 5",
-  "Quận 6",
-  "Quận 7",
-  "Quận 8",
-  "Quận 9",
-  "Quận 10",
-  "Quận 11",
-  "Quận 12",
-  "Quận Bình Thạnh",
-  "Quận Tân Bình",
-  "Quận Tân Phú",
-  "Quận Phú Nhuận",
-  "Quận Gò Vấp",
-  "Quận Thủ Đức",
-  "Huyện Bình Chánh",
-  "Huyện Nhà Bè",
-  "Huyện Củ Chi",
-  "Huyện Hóc Môn",
-];
+import { Flex, Input } from "antd";
+import { useSearch, useSearchResults } from "../hooks/useSearch";
+import { useState, useEffect, useRef } from "react";
+import SearchPopup from "./SearchPopup";
+import { CloseCircleFilled } from "@ant-design/icons";
+import { useDebounce } from "use-debounce";
+import "./SearchBar.css";
 
 interface SearchBarProps {
   placeholder?: string;
   size?: "small" | "middle" | "large";
   className?: string;
-  addonWidth?: number;
-  maxTagCount?: number;
-  // Add custom search handler prop
-  onSearch?: (searchTerm: string) => void;
-  // Add optional prop for initial value
   initialValue?: string;
 }
 
@@ -46,87 +17,97 @@ const SearchBar: React.FC<SearchBarProps> = ({
   placeholder = "Nhập tên quán ăn...",
   size = "middle",
   className = "",
-  addonWidth = 100,
-  maxTagCount = 0,
-  onSearch,
 }) => {
-  const {
-    searchTerm,
-    selectedDistricts,
-    setSearchTerm,
-    setSelectedDistricts,
-    handleSearch,
-  } = useSearch();
+  const { searchTerm, setSearchTerm, performSearch, isSearching } = useSearch();
+  const [showPopup, setShowPopup] = useState(false);
+  const [shouldShowPopup, setShouldShowPopup] = useState(false);
+  const [debouncedShouldShow] = useDebounce(shouldShowPopup, 300);
+  const searchBarRef = useRef<HTMLDivElement>(null);
 
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const selectRef = useRef<HTMLDivElement>(null);
-
-  // Add scroll event listener to close dropdown when scrolling
   useEffect(() => {
-    const handleScroll = () => {
-      if (dropdownOpen) {
-        setDropdownOpen(false);
+    if (debouncedShouldShow) {
+      setShowPopup(true);
+    }
+  }, [debouncedShouldShow]);
+
+  const {
+    data: quickResults,
+    isLoading: isQuickSearching,
+    isFetched: isQuickSearchFetched,
+  } = useSearchResults(1, {
+    limit: 5,
+  });
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        searchBarRef.current &&
+        !searchBarRef.current.contains(event.target as Node)
+      ) {
+        setShowPopup(false);
+        setShouldShowPopup(false);
       }
     };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [dropdownOpen]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  // Create a combined search handler
-  const handleSearchWithCallback = (value: string) => {
-    // Call the internal search handler
-    handleSearch(value, selectedDistricts);
-
-    // If external handler is provided, call it too
-    if (onSearch) {
-      onSearch(value);
+  const handleFocus = () => {
+    if (searchTerm.trim().length >= 1) {
+      setShouldShowPopup(true);
     }
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setShouldShowPopup(value.trim().length >= 1);
+  };
+
+  const handleSearch = () => {
+    setShowPopup(false);
+    setShouldShowPopup(false);
+    performSearch(searchTerm);
+  };
+
+  const handleClear = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSearchTerm("");
+    setShowPopup(false);
+    setShouldShowPopup(false);
+  };
+
   return (
-    <Input.Search
-      placeholder={placeholder}
-      enterButton
-      size={size}
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      onSearch={handleSearchWithCallback}
-      className={className}
-      addonBefore={
-        <div ref={selectRef}>
-          <Select
-            mode="multiple"
-            allowClear
-            placeholder="Quận"
-            size={size}
-            style={{ minWidth: addonWidth }}
-            onChange={setSelectedDistricts}
-            value={selectedDistricts}
-            maxTagCount={maxTagCount}
-            open={dropdownOpen}
-            onDropdownVisibleChange={setDropdownOpen}
-            dropdownStyle={{ maxHeight: "300px", overflow: "auto" }}
-            maxTagPlaceholder={(omittedValues) => (
-              <Tooltip
-                styles={{ root: { pointerEvents: "none" } }}
-                title={omittedValues.map(({ label }) => label).join(", ")}
-              >
-                <span>Hover Me</span>
-              </Tooltip>
-            )}
-          >
-            {districts.map((district) => (
-              <Option key={district} value={district}>
-                {district}
-              </Option>
-            ))}
-          </Select>
-        </div>
-      }
-    />
+    <Flex ref={searchBarRef} className="search-bar-container">
+      <Input.Search
+        placeholder={placeholder}
+        enterButton
+        size={size}
+        value={searchTerm}
+        onChange={handleChange}
+        onSearch={handleSearch}
+        onFocus={handleFocus}
+        className={className}
+        loading={isSearching}
+        suffix={
+          <CloseCircleFilled
+            className={`search-bar-clear ${searchTerm ? "search-bar-clear-visible" : "search-bar-clear-hidden"}`}
+            onClick={handleClear}
+          />
+        }
+      />
+      <SearchPopup
+        results={quickResults || []}
+        isLoading={isQuickSearching}
+        visible={showPopup}
+        onSelect={() => {
+          setShowPopup(false);
+          setShouldShowPopup(false);
+        }}
+        isFetched={isQuickSearchFetched}
+      />
+    </Flex>
   );
 };
 

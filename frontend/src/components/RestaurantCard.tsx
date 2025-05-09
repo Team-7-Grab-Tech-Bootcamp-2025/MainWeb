@@ -1,74 +1,69 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Typography, Rate, Tag, Flex, Divider, Card, theme } from "antd";
+import { useNavigate } from "react-router";
+import { StarFilled, EnvironmentOutlined } from "@ant-design/icons";
+import {
+  getImagePlaceholder,
+  getRestaurantImage,
+} from "../constants/backgroundConstants";
+import "./RestaurantCard.css";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 const { useToken } = theme;
 
 interface RestaurantCardProps {
+  id: number;
   name: string;
-  image: string;
   rating: number;
-  reviewCount?: number;
-  keywords: string[];
-  category: string;
-  description?: string;
-  address?: string;
-  onClick?: () => void;
+  reviewCount: number;
+  categories: string[];
+  address: string;
+  distance?: number;
 }
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({
   name,
-  image,
   rating,
   reviewCount = 0,
-  keywords,
-  category,
-  description = "Experience amazing cuisine at this restaurant.",
-  address = "123 Food Street",
-  onClick,
+  categories,
+  address,
+  id = 1,
+  distance,
 }) => {
   const { token } = useToken();
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
   const [isLargeScreen, setIsLargeScreen] = useState(false);
   const hoverTimerRef = useRef<number | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [expandedPosition, setExpandedPosition] = useState({ left: 0, top: 0 });
 
-  // Check screen size
   useEffect(() => {
     const checkScreenSize = () => {
-      // Tailwind lg breakpoint is 1024px
-      setIsLargeScreen(window.innerWidth >= 1024);
+      const isLarge = window.innerWidth >= 1024;
+      setIsLargeScreen(isLarge);
     };
 
-    // Initial check
     checkScreenSize();
 
-    // Add listener for window resize
     window.addEventListener("resize", checkScreenSize);
 
-    // Cleanup
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   const calculateCardPosition = () => {
     if (!cardRef.current) return;
 
-    // Get the original card's position and dimensions
     const card = cardRef.current;
     const cardRect = card.getBoundingClientRect();
 
-    // Find the center of the source card (center_S = Sx + Sw/2)
     const centerS = cardRect.left + cardRect.width / 2;
 
-    // Width of the expanded card
-    const expandedWidth = 360; // From the w-[360px] class
+    const expandedWidth = 360;
 
-    // Calculate the left position of the expanded card (Bx = center_S - Bw/2)
     const leftPosition = centerS - expandedWidth / 2;
 
-    // Calculate top position to be above the card
-    const topPosition = cardRect.top - 80; // 50px above the original card
+    const topPosition = cardRect.top - 80;
 
     setExpandedPosition({
       left: leftPosition,
@@ -77,7 +72,6 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   };
 
   const handleMouseEnter = () => {
-    // Only enable hover expansion on large screens
     if (!isLargeScreen) return;
 
     hoverTimerRef.current = setTimeout(() => {
@@ -94,7 +88,6 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
     setExpanded(false);
   };
 
-  // Add scroll event listener to close expanded card when scrolling
   useEffect(() => {
     const handleScroll = () => {
       if (expanded) {
@@ -112,65 +105,97 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
     };
   }, [expanded]);
 
+  const handleCardClick = () => {
+    navigate(`/restaurant/${id}`);
+  };
+
   return (
     <div
-      className="relative cursor-pointer"
+      className="restaurant-card-container"
       ref={cardRef}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      onClick={onClick}
+      onClick={handleCardClick}
     >
-      {/* Regular Card */}
       <Card
-        className="overflow-hidden rounded-lg shadow-md transition-all duration-300 hover:shadow-xl"
+        className="restaurant-card"
         cover={
-          <div className="relative h-36 w-full overflow-hidden">
+          <div className="restaurant-card-image-container">
             <img
-              src={image}
+              src={getRestaurantImage(id)}
               alt={name}
-              className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+              className="restaurant-card-image"
+              loading="lazy"
+              decoding="async"
+              fetchPriority="low"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = getImagePlaceholder(id);
+                target.onerror = null;
+              }}
             />
-            <div className="absolute top-3 right-3">
-              <Tag color="orange" className="m-0 border-0">
-                {category}
-              </Tag>
-            </div>
           </div>
         }
-        bodyStyle={{ padding: "16px" }}
+        styles={{
+          body: { padding: "16px" },
+        }}
       >
-        <Title level={5} ellipsis={{ rows: 1 }} className="mb-1">
+        <Title
+          level={5}
+          ellipsis={{ rows: 1 }}
+          className="restaurant-card-title"
+        >
           {name}
         </Title>
 
-        <Flex align="center" gap={8} className="mb-2">
-          <Rate
-            disabled
-            defaultValue={rating}
-            allowHalf
-            className="text-sm"
-            style={{ fontSize: "14px" }}
-          />
-          <Text className="text-sm text-gray-500">
-            {rating.toFixed(1)} ({reviewCount})
+        <Flex align="center" className="mb-1" gap={6}>
+          <Text className="restaurant-card-rating" ellipsis>
+            {rating.toFixed(1)}
+          </Text>
+          <StarFilled className="restaurant-card-rating-icon" />
+          <Text className="restaurant-card-review-count" ellipsis>
+            ({reviewCount} đánh giá)
           </Text>
         </Flex>
 
-        {/* Tags - Limited to one row with fixed height */}
-        <div className="relative h-8 overflow-hidden">
-          <Flex wrap="nowrap" className="gap-1 overflow-hidden">
-            {keywords.slice(0, 3).map((keyword, index) => (
+        {distance !== undefined && distance > 0 && (
+          <Tag
+            className="restaurant-card-distance-tag"
+            color="#c9938326"
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="restaurant-card-distance-tag-icon"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+              </svg>
+            }
+          >
+            {distance?.toFixed(1)} km
+          </Tag>
+        )}
+        <div className="restaurant-card-categories">
+          <Flex wrap="nowrap" className="overflow-hidden" gap={4}>
+            {categories.slice(0, 2).map((category, index) => (
               <Tag.CheckableTag
                 key={index}
                 checked
-                className="m-0 whitespace-nowrap"
+                className="restaurant-card-category-tag"
               >
-                {keyword}
+                {category}
               </Tag.CheckableTag>
             ))}
-            {keywords.length > 3 && (
-              <Text className="ml-1 flex items-center text-xs text-gray-500">
-                +{keywords.length - 3}
+            {categories.length > 2 && (
+              <Text className="restaurant-card-more-categories">
+                +{categories.length - 2}
               </Text>
             )}
           </Flex>
@@ -180,7 +205,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
       {/* Expanded Card - Only shown on large screens */}
       {expanded && isLargeScreen && (
         <Card
-          className="fixed z-50 w-[360px] origin-center animate-[var(--animate-zoom-from-point)] rounded-lg"
+          className="restaurant-card-expanded"
           onClick={(e) => e.stopPropagation()}
           style={{
             boxShadow: token.boxShadowSecondary,
@@ -188,21 +213,24 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
             left: `${expandedPosition.left}px`,
           }}
           cover={
-            <div className="relative h-48 w-full overflow-hidden">
+            <div className="restaurant-card-expanded-image-container">
               <img
-                src={image}
+                src={getRestaurantImage(id)}
                 alt={name}
-                className="h-full w-full object-cover"
+                className="restaurant-card-expanded-image"
+                loading="lazy"
+                decoding="async"
+                fetchPriority="low"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = getImagePlaceholder(id);
+                  target.onerror = null;
+                }}
               />
-              <div className="absolute top-3 right-3">
-                <Tag color="orange" className="m-0 border-0">
-                  {category}
-                </Tag>
-              </div>
             </div>
           }
         >
-          <Title level={4} className="mb-2">
+          <Title level={4} className="restaurant-card-expanded-title">
             {name}
           </Title>
 
@@ -214,24 +242,48 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
               style={{ fontSize: "16px" }}
             />
             <Text className="text-gray-500">
-              {rating.toFixed(1)} ({reviewCount} reviews)
+              {rating.toFixed(1)} ({reviewCount} đánh giá)
             </Text>
           </Flex>
 
-          <Paragraph className="mb-3 text-gray-600">{description}</Paragraph>
-
-          <Text className="mb-4 block text-gray-600">
-            <span className="font-semibold">Address:</span> {address}
+          <Text className="restaurant-card-expanded-address">
+            <span className="restaurant-card-expanded-address-label">
+              Địa chỉ:
+            </span>{" "}
+            {address}
           </Text>
+
+          {distance !== undefined && distance > 0 && (
+            <div className="restaurant-card-expanded-distance">
+              <EnvironmentOutlined className="restaurant-card-expanded-distance-icon" />
+              <div>
+                <Text className="restaurant-card-expanded-distance-label">
+                  Cách bạn
+                </Text>
+                <Text className="restaurant-card-expanded-distance-value">
+                  {distance.toFixed(1)} km
+                </Text>
+              </div>
+            </div>
+          )}
 
           <Divider className="my-3" />
 
           <div>
-            <Text className="mb-2 block font-semibold">Features:</Text>
-            <Flex wrap gap={4} className="mb-2">
-              {keywords.map((keyword, index) => (
-                <Tag key={index} className="m-0">
-                  {keyword}
+            <Text className="restaurant-card-expanded-categories-label">
+              Loại quán:
+            </Text>
+            <Flex
+              wrap
+              gap={4}
+              className="restaurant-card-expanded-categories-list"
+            >
+              {categories.map((category, index) => (
+                <Tag
+                  key={index}
+                  className="restaurant-card-expanded-category-tag"
+                >
+                  {category}
                 </Tag>
               ))}
             </Flex>
@@ -241,5 +293,4 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
     </div>
   );
 };
-
 export default RestaurantCard;
