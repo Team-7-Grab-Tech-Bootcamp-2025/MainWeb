@@ -1,18 +1,16 @@
-import { Flex, Typography } from "antd";
+import { Flex } from "antd";
 import { Layout } from "antd";
 import React, { useState, useEffect } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import SearchBar from "./SearchBar";
+import "./Header.css";
 
-const { Title } = Typography;
 const { Header } = Layout;
 
 const AppHeader: React.FC = () => {
   const [searchOpacity, setSearchOpacity] = useState(0);
   const [isHomePage, setIsHomePage] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
-
   // Check if current page is home page
   useEffect(() => {
     // Assuming '/' is the home page path
@@ -55,20 +53,26 @@ const AppHeader: React.FC = () => {
   }, [isHomePage]);
 
   return (
-    <Header className="bg-background sticky top-0 z-50 w-full border-b border-none px-3 shadow-sm transition-all duration-300 md:px-12">
-      <Flex className="mx-auto h-full" align="center" gap={24}>
-        <NavLink to="/">
-          <Flex align="center" gap={12} className="min-w-max">
-            <img
-              src="/icon.svg"
-              alt="Logo"
-              className="text-foreground size-7"
-            />
-            <Title level={3} style={{ marginBottom: 0 }}>
-              Angi
-            </Title>
-          </Flex>
-        </NavLink>
+    <Header className="header">
+      <Flex className="header-container" align="center" gap={24}>
+        <Flex align="center">
+          <NavLink to="/" className="logo-nav-link">
+            <img src="/icon.png" alt="Logo" className="logo" />
+          </NavLink>
+        </Flex>
+
+        {/* Simple Navigation Links */}
+        <Flex gap={24} className="nav-links" align="center">
+          <NavLink to="/" className="nav-link">
+            Trang chủ
+          </NavLink>
+          <NavLink to="/restaurants" className="nav-link">
+            Nhà hàng
+          </NavLink>
+          <NavLink to="/cuisines" className="nav-link">
+            Ẩm thực
+          </NavLink>
+        </Flex>
 
         {/* Animated Search Bar in Header */}
         <Flex
@@ -79,19 +83,9 @@ const AppHeader: React.FC = () => {
               : "none",
             transformOrigin: "center",
           }}
-          className="w-full justify-center-safe transition-all duration-300 ease-in-out"
+          className="search-container"
         >
-          <Flex className="w-full max-w-lg">
-            <SearchBar
-              size="middle"
-              className="rounded-lg shadow-sm md:-ml-14"
-              addonWidth={120}
-              // Replace onSearch with handleSearch, which is likely the correct prop name
-              onSearch={(query: string) => {
-                navigate(`/search?q=${encodeURIComponent(query)}`);
-              }}
-            />
-          </Flex>
+          <SearchBar size="middle" className="search-bar" />
         </Flex>
       </Flex>
     </Header>
