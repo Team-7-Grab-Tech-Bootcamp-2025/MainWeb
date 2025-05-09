@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@layer components {
+  .cuisine-card {
+    @apply transform cursor-pointer transition-all duration-300 hover:-translate-y-1;
+  }
+
+  .cuisine-card-container {
+    @apply relative h-[140px] overflow-hidden rounded-lg shadow-md transition-shadow duration-300 hover:shadow-lg;
+  }
+
+  .cuisine-card-overlay {
+    @apply absolute inset-0;
+
+    @variant before {
+      @apply absolute inset-0 bg-[linear-gradient(-40deg,rgba(255,255,255,0.2),rgba(255,255,255,0)_40%,rgba(255,255,255,0)_60%,rgba(255,255,255,0.2))] content-[''];
+    }
+
+    @variant after {
+      @apply absolute inset-0 bg-[url('/seigaiha.png')] -mask-linear-45 mask-linear-from-black mask-linear-to-transparent/40 bg-no-repeat opacity-40 content-[''];
+    }
+  }
+
+  .cuisine-card-content {
+    @apply relative h-full px-4;
+  }
+
+  .cuisine-card-title {
+    @apply m-0 text-white;
+  }
+
+  .cuisine-card-link {
+    @apply absolute bottom-6 text-sm font-semibold text-white;
+  }
+}
