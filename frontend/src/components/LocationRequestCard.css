@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@layer components {
+  .location-card {
+    @apply fixed right-0 bottom-10 z-50 mx-auto w-full max-w-md px-4;
+    animation: slide-in-from-right 0.3s ease-out forwards;
+  }
+
+  .location-card-icon {
+    @apply flex-shrink-0 p-1;
+  }
+
+  .location-card-icon-svg {
+    @apply text-xl text-[var(--primary-color)]!;
+  }
+
+  .location-card-content {
+    @apply ml-3 flex-1;
+  }
+
+  .location-card-title {
+    @apply text-sm font-semibold;
+  }
+
+  .location-card-description {
+    @apply mt-1 text-sm text-gray-500;
+  }
+
+  .location-card-error {
+    @apply mt-1 text-sm text-red-500;
+  }
+
+  .location-card-actions {
+    @apply mt-4 flex space-x-3;
+  }
+
+  @keyframes slide-in-from-right {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+}
