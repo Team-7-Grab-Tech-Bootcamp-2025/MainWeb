@@ -1,8 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { StyleProvider } from "@ant-design/cssinjs";
-import { ConfigProvider, Spin } from "antd";
+import { ConfigProvider, Flex } from "antd";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
+import "@ant-design/v5-patch-for-react-19";
+import "./index.css";
+import LoadingDot from "./components/LoadingDot";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -41,14 +44,22 @@ export function HydrateFallback() {
         },
       }}
     >
-      <div className="relative min-h-screen">
-        <Spin
-          size="large"
-          className="absolute top-1/3 left-1/2 -translate-x-1/2"
-        />
-      </div>
+      <Flex className="min-h-screen" align="center" justify="center">
+        <LoadingDot />
+      </Flex>
+
     </ConfigProvider>
   );
+}
+
+export function links() {
+  return [
+    {
+      rel: "icon",
+      href: "/favicon.png",
+      type: "image/png",
+    },
+  ];
 }
 
 export default function Root() {
@@ -74,7 +85,10 @@ export default function Root() {
           }}
         >
           <Outlet />
-          <ReactQueryDevtools initialIsOpen={false} />
+          <ReactQueryDevtools
+            initialIsOpen={false}
+            buttonPosition="bottom-left"
+          />
         </ConfigProvider>
       </StyleProvider>
     </QueryClientProvider>

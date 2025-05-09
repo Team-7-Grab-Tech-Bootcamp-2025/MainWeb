@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@layer components {
+  .search-popup {
+    @apply absolute top-full right-0 left-0 z-10 mt-1 max-h-[300px] overflow-y-auto opacity-90 shadow-lg;
+  }
+
+  .search-popup-item {
+    @apply cursor-pointer px-4 py-2 transition-colors duration-200 hover:bg-gray-50;
+  }
+
+  .search-popup-item-name {
+    @apply text-start text-sm font-semibold;
+  }
+
+  .search-popup-no-results {
+    @apply p-4 text-center text-gray-500;
+  }
+}

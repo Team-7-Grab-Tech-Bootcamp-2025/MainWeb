@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@layer components {
+  .loading-dot > div {
+    @apply size-2 rounded-full bg-[var(--primary-color)];
+    animation: custom-bounce 1s infinite ease-in-out both;
+  }
+  .loading-dot > div:nth-child(1) {
+    animation-delay: -0.32s;
+  }
+  .loading-dot > div:nth-child(2) {
+    animation-delay: -0.16s;
+  }
+
+  @keyframes custom-bounce {
+    0%,
+    80%,
+    100% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-8px);
+    }
+  }
+}
