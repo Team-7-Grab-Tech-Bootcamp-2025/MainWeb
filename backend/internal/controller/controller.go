@@ -40,6 +40,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 		{
 			restaurants.GET("/:id", c.GetRestaurantDetailByID)
 			restaurants.GET("", c.GetNearbyRestaurants)
+			restaurants.GET("/:id/reviews", c.GetRestaurantReviewsByLabel)
 		}
 		v1.GET("foodtypes", c.GetAllFoodTypes)
 	}
@@ -339,4 +340,70 @@ func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, model.NewResponse(message, restaurants))
+}
+
+// GetRestaurantReviewsByLabel godoc
+// @Summary Get restaurant reviews by label
+// @Description get restaurant reviews by ID and label
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Param id path int true "Restaurant ID"
+// @Param label query string true "Label type (Ambience, Delivery, Food, Price, Service)"
+// @Param page query int false "Page number" default(1)
+// @Success 200 {object} model.Response{data=model.ReviewResponse}
+// @Failure 400 {object} model.Response
+// @Failure 404 {object} model.Response
+// @Router /api/v1/restaurants/{id}/reviews [get]
+func (c *Controller) GetRestaurantReviewsByLabel(ctx *gin.Context) {
+	log.Info().Msg("Fetching restaurant reviews by label")
+
+	// Extract and validate path parameters
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid restaurant ID format", nil))
+		return
+	}
+
+	// Extract and validate query parameters
+	label := ctx.Query("label")
+	if label == "" {
+		ctx.JSON(http.StatusBadRequest, model.NewResponse("Label parameter is required", nil))
+		return
+	}
+
+	// Validate label values
+	validLabels := map[string]bool{
+		"Ambience": true,
+		"Delivery": true,
+		"Food":     true,
+		"Price":    true,
+		"Service":  true,
+	}
+
+	if !validLabels[label] {
+		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid label. Must be one of: Ambience, Delivery, Food, Price, Service", nil))
+		return
+	}
+
+	// Extract and validate page parameter
+	pageStr := ctx.DefaultQuery("page", "1")
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid page number", nil))
+		return
+	}
+
+	// Get reviews from service
+	reviewResponse, err := c.service.GetRestaurantReviewsByLabel(id, label, page)
+	if err != nil {
+		if err.Error() == "not found" {
+			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))
+		} else {
+			ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch reviews", nil))
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse("Reviews fetched successfully", reviewResponse))
 }

@@ -22,6 +22,7 @@ type Service interface {
 	GetLabelsRating(id int) (*model.LabelsRating, error)
 	GetRestaurantDetail(id int, lat float64, lng float64) (*model.RestaurantDetail, error)
 	GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
+	GetRestaurantReviewsByLabel(id int, label string, page int) (*model.ReviewResponse, error)
 }
 
 type service struct {
@@ -207,4 +208,26 @@ func (s *service) GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Res
 		return nil, err
 	}
 	return restaurants, nil
+}
+
+func (s *service) GetRestaurantReviewsByLabel(id int, label string, page int) (*model.ReviewResponse, error) {
+	log.Info().Msgf("Fetching reviews for restaurant ID: %d with label: %s on page: %d", id, label, page)
+
+	// Check if restaurant exists
+	_, err := s.GetRestaurantByID(id, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get reviews from repository
+	reviews, totalReviews, err := s.repo.FindReviewsByRestaurantIDAndLabel(id, label, page)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to fetch reviews by restaurant ID and label")
+		return nil, err
+	}
+
+	return &model.ReviewResponse{
+		Reviews:      reviews,
+		TotalReviews: totalReviews,
+	}, nil
 }

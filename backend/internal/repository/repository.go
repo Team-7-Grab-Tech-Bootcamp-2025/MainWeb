@@ -6,6 +6,7 @@ import (
 	"math"
 	"skeleton-internship-backend/internal/model"
 	"sort"
+	"time"
 
 	"github.com/rs/zerolog/log"
 )
@@ -23,6 +24,7 @@ type Repository interface {
 	CalculateLabelsRating(id int) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
 	FindPlatformsAndRatingsByRestaurantID(id int) ([]string, []float64, error)
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
+	FindReviewsByRestaurantIDAndLabel(id int, label string, page int) ([]model.Review, int, error)
 }
 
 type repository struct {
@@ -89,13 +91,11 @@ func (r *repository) Delete(id uint) error {
 // Haversine function to calculate distance between two points on the Earth
 func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	const R = 6371 // Radius of the Earth in kilometers
-	
 
 	lat1Rad := lat1 * math.Pi / 180
 	lat2Rad := lat2 * math.Pi / 180
 	deltaLat := (lat2 - lat1) * math.Pi / 180
 	deltaLon := (lon2 - lon1) * math.Pi / 180
-
 
 	a := math.Sin(deltaLat/2)*math.Sin(deltaLat/2) +
 		math.Cos(lat1Rad)*math.Cos(lat2Rad)*
@@ -365,4 +365,92 @@ func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model
 	}
 
 	return restaurants, nil
+}
+
+func (r *repository) FindReviewsByRestaurantIDAndLabel(id int, label string, page int) ([]model.Review, int, error) {
+	log.Info().Msgf("Finding reviews for restaurant ID: %d with label: %s on page: %d", id, label, page)
+
+	// Calculate offset based on page number (24 reviews per page)
+	offset := (page - 1) * 24
+	limit := 24
+
+	// Query to get reviews with pagination
+	query := `
+		SELECT 
+			r.rating_id,
+			u.user_name,
+			r.rating,
+			r.feedback,
+			r.review_time,
+			fl.label,
+			fl.rating_label
+		FROM 
+			Review r
+		JOIN 
+			User u ON r.user_id = u.user_id
+		JOIN 
+			Feedback_label fl ON r.rating_id = fl.rating_id
+		WHERE 
+			r.restaurant_id = ? 
+			AND fl.label = ?
+		ORDER BY 
+			r.review_time DESC
+		LIMIT ? OFFSET ?
+	`
+
+	rows, err := r.db.Query(query, id, label, limit, offset)
+	if err != nil {
+		log.Error().Err(err).Msg("Error executing query to find reviews")
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	var reviews []model.Review
+
+	for rows.Next() {
+		var review model.Review
+		var reviewTime sql.NullTime
+
+		if err := rows.Scan(
+			&review.RatingID,
+			&review.UserName,
+			&review.Rating,
+			&review.Feedback,
+			&reviewTime,
+			&review.Label,
+			&review.RatingLabel,
+		); err != nil {
+			log.Error().Err(err).Msg("Error scanning review data")
+			return nil, 0, err
+		}
+
+		// Format the time as ISO string if not null
+		if reviewTime.Valid {
+			review.ReviewTime = reviewTime.Time.Format(time.RFC3339)
+		}
+
+		reviews = append(reviews, review)
+	}
+
+	// Query to get total count
+	countQuery := `
+		SELECT 
+			COUNT(*)
+		FROM 
+			Review r
+		JOIN 
+			Feedback_label fl ON r.rating_id = fl.rating_id
+		WHERE 
+			r.restaurant_id = ? 
+			AND fl.label = ?
+	`
+
+	var totalReviews int
+	err = r.db.QueryRow(countQuery, id, label).Scan(&totalReviews)
+	if err != nil {
+		log.Error().Err(err).Msg("Error executing query to count reviews")
+		return nil, 0, err
+	}
+
+	return reviews, totalReviews, nil
 }
