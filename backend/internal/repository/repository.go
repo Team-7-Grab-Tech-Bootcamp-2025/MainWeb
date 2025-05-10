@@ -11,13 +11,13 @@ import (
 )
 
 type Repository interface {
-	Create(todo *model.Todo) error	
+	Create(todo *model.Todo) error
 	FindAll() ([]model.Todo, error)
 	FindByID(id uint) (*model.Todo, error)
 	Update(todo *model.Todo) error
 	Delete(id uint) error
 	FindRestaurantByID(id string, lat float64, lng float64) (*model.Restaurant, error)
-	FindAllFoodTypes() ([]string, error)	
+	FindAllFoodTypes() ([]string, error)
 	FindDishesByRestaurantID(id string) ([]model.Dish, error)
 	FindFoodTypesByRestaurantID(id string) ([]string, error)
 	CalculateLabelsRating(id string) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
@@ -89,13 +89,11 @@ func (r *repository) Delete(id uint) error {
 // Haversine function to calculate distance between two points on the Earth
 func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	const R = 6371 // Radius of the Earth in kilometers
-	
 
 	lat1Rad := lat1 * math.Pi / 180
 	lat2Rad := lat2 * math.Pi / 180
 	deltaLat := (lat2 - lat1) * math.Pi / 180
 	deltaLon := (lon2 - lon1) * math.Pi / 180
-
 
 	a := math.Sin(deltaLat/2)*math.Sin(deltaLat/2) +
 		math.Cos(lat1Rad)*math.Cos(lat2Rad)*
