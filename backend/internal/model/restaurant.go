@@ -4,7 +4,7 @@ package model
 // @Description This struct is used to represent a restaurant in the system
 type Restaurant struct {
 	// Unique identifier of the restaurant
-	ID          int     `json:"id"`
+	ID          string     `json:"id"`
 	// Name of the restaurant
 	Name        string  `json:"name"`
 	// Latitude and longitude coordinates of the restaurant

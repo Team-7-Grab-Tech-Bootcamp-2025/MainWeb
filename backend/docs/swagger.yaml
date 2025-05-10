@@ -78,7 +78,7 @@ definitions:
         type: string
       id:
         description: Unique identifier of the restaurant
-        type: integer
+        type: string
       latitude:
         description: Latitude and longitude coordinates of the restaurant
         type: number
@@ -251,7 +251,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Latitude
         in: query
         name: lat

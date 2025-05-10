@@ -202,7 +202,7 @@ func (c *Controller) DeleteTodo(ctx *gin.Context) {
 // @Tags restaurants
 // @Accept json
 // @Produce json
-// @Param id path int true "Restaurant ID"
+// @Param id path string true "Restaurant ID"
 // @Param lat query number false "Latitude" (optional)
 // @Param lng query number false "Longitude" (optional)
 // @Success 200 {object} model.Response{data=model.RestaurantDetail}
@@ -237,11 +237,8 @@ func (c *Controller) GetRestaurantDetailByID(ctx *gin.Context) {
 		}
 	}
 
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid ID format", nil))
-		return
-	}
+	// No need to convert ID to integer anymore, just use the string directly
+	id := ctx.Param("id")
 
 	restaurantDetail, err := c.service.GetRestaurantDetail(id, lat, lng)
 	if err != nil {
