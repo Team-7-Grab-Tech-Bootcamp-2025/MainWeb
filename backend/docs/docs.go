@@ -154,7 +154,7 @@ const docTemplate = `{
                 "summary": "Get a restaurant",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Restaurant ID",
                         "name": "id",
                         "in": "path",
@@ -207,9 +207,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/todos": {
+        "/api/v1/restaurants/{id}/menu": {
             "get": {
-                "description": "get all todos",
+                "description": "get restaurant menu by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -217,9 +217,18 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "todos"
+                    "restaurants"
                 ],
-                "summary": "Get all todos",
+                "summary": "Get restaurant menu",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -234,7 +243,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/model.Todo"
+                                                "$ref": "#/definitions/model.Dish"
                                             }
                                         }
                                     }
@@ -242,219 +251,8 @@ const docTemplate = `{
                             ]
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "create new todo",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "todos"
-                ],
-                "summary": "Create a todo",
-                "parameters": [
-                    {
-                        "description": "Create todo",
-                        "name": "todo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.TodoCreate"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/model.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Todo"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/todos/{id}": {
-            "get": {
-                "description": "get todo by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "todos"
-                ],
-                "summary": "Get a todo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Todo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/model.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Todo"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
                     "404": {
                         "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "update todo by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "todos"
-                ],
-                "summary": "Update a todo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Todo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update todo",
-                        "name": "todo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.TodoCreate"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/model.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.Todo"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "delete todo by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "todos"
-                ],
-                "summary": "Delete a todo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Todo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -493,35 +291,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "dto.TodoCreate": {
-            "description": "Todo creation request body",
-            "type": "object",
-            "required": [
-                "title"
-            ],
-            "properties": {
-                "description": {
-                    "description": "Detailed description of the todo item",
-                    "type": "string",
-                    "example": "Write comprehensive documentation for the API endpoints"
-                },
-                "status": {
-                    "description": "Current status of the todo item (pending, in-progress, completed)",
-                    "type": "string",
-                    "enum": [
-                        "pending",
-                        "in-progress",
-                        "completed"
-                    ],
-                    "example": "pending"
-                },
-                "title": {
-                    "description": "Title of the todo item",
-                    "type": "string",
-                    "example": "Complete project documentation"
-                }
-            }
-        },
         "model.Dish": {
             "description": "This struct is used to represent a dish in the system",
             "type": "object",
@@ -602,7 +371,7 @@ const docTemplate = `{
                 },
                 "id": {
                     "description": "Unique identifier of the restaurant",
-                    "type": "integer"
+                    "type": "string"
                 },
                 "latitude": {
                     "description": "Latitude and longitude coordinates of the restaurant",
@@ -629,13 +398,6 @@ const docTemplate = `{
         "model.RestaurantDetail": {
             "type": "object",
             "properties": {
-                "dishes": {
-                    "description": "List of dishes available at the restaurant",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Dish"
-                    }
-                },
                 "labels": {
                     "description": "Ratings for different aspects of the restaurant\nAmbience, delivery, food, price, and service ratings",
                     "allOf": [
@@ -659,48 +421,12 @@ const docTemplate = `{
                     }
                 },
                 "restaurant": {
-                    "$ref": "#/definitions/model.Restaurant"
-                }
-            }
-        },
-        "model.Todo": {
-            "description": "Todo represents a single todo item with its details",
-            "type": "object",
-            "properties": {
-                "created_at": {
-                    "description": "Timestamp when the todo was created",
-                    "type": "string",
-                    "example": "2024-03-15T08:00:00Z"
-                },
-                "description": {
-                    "description": "Detailed description of the todo item",
-                    "type": "string",
-                    "example": "Write comprehensive documentation for the API endpoints"
-                },
-                "id": {
-                    "description": "Unique identifier of the todo",
-                    "type": "integer",
-                    "example": 1
-                },
-                "status": {
-                    "description": "Current status of the todo item (pending, in-progress, completed)",
-                    "type": "string",
-                    "enum": [
-                        "pending",
-                        "in-progress",
-                        "completed"
-                    ],
-                    "example": "pending"
-                },
-                "title": {
-                    "description": "Title of the todo item",
-                    "type": "string",
-                    "example": "Complete project documentation"
-                },
-                "updated_at": {
-                    "description": "Timestamp when the todo was last updated",
-                    "type": "string",
-                    "example": "2024-03-15T08:00:00Z"
+                    "description": "Information about the restaurant\nThis includes the restaurant's ID, name, address, etc.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.Restaurant"
+                        }
+                    ]
                 }
             }
         }

@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@layer components {
+  .rating-card {
+    @apply shadow-lg;
+  }
+
+  .rating-header {
+    @apply relative -mt-6 -mr-6 mb-6 -ml-6 rounded-t-lg bg-[#c99383] p-6 text-center;
+  }
+
+  .rating-average {
+    @apply size-24 rounded-full bg-white shadow-lg;
+  }
+
+  .rating-average-text {
+    @apply m-0 p-0 text-center;
+  }
+
+  .rating-category-card {
+    @apply h-full bg-white text-center transition-all duration-300 hover:shadow-md;
+  }
+
+  .rating-category-icon {
+    @apply mb-2 size-16 rounded-full text-white shadow-lg;
+  }
+
+  .rating-category-title {
+    @apply mb-0 font-bold;
+  }
+
+  .rating-category-value {
+    @apply m-0 font-bold;
+  }
+}

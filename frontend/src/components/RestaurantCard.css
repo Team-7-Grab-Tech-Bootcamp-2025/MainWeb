@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@layer components {
+  .restaurant-card-container {
+    @apply relative cursor-pointer;
+  }
+
+  .restaurant-card {
+    @apply overflow-hidden rounded-lg shadow-md transition-all duration-300 hover:shadow-xl;
+  }
+
+  .restaurant-card-image-container {
+    @apply relative h-36 w-full overflow-hidden;
+  }
+
+  .restaurant-card-image {
+    @apply h-full w-full object-cover transition-transform duration-500 hover:scale-105;
+  }
+
+  .restaurant-card-title {
+    @apply mb-1;
+  }
+
+  .restaurant-card-rating {
+    @apply text-base font-semibold text-[rgb(255,149,41)]!;
+  }
+
+  .restaurant-card-rating-icon {
+    @apply relative -top-[1px] mr-1 text-sm text-[rgb(255,149,41)]!;
+  }
+
+  .restaurant-card-review-count {
+    @apply relative -top-[1px] text-sm text-gray-500;
+  }
+
+  .restaurant-card-distance-tag {
+    @apply m-0 mb-2 rounded-full text-sm font-medium! text-[#c99383];
+  }
+
+  .restaurant-card-distance-tag-icon {
+    @apply mr-1 mb-[3px] inline h-3 w-3;
+  }
+
+  .restaurant-card-categories {
+    @apply relative h-8 overflow-hidden;
+  }
+
+  .restaurant-card-category-tag {
+    @apply m-0 whitespace-nowrap;
+  }
+
+  .restaurant-card-more-categories {
+    @apply ml-1 flex items-center text-xs text-nowrap text-gray-500;
+  }
+
+  .restaurant-card-expanded {
+    @apply fixed z-50 w-[360px] origin-center animate-[var(--animate-zoom-from-point)] rounded-lg;
+  }
+
+  .restaurant-card-expanded-image-container {
+    @apply relative h-48 w-full overflow-hidden;
+  }
+
+  .restaurant-card-expanded-image {
+    @apply h-full w-full object-cover;
+  }
+
+  .restaurant-card-expanded-title {
+    @apply mb-2;
+  }
+
+  .restaurant-card-expanded-address {
+    @apply mb-4 block text-gray-600;
+  }
+
+  .restaurant-card-expanded-address-label {
+    @apply font-semibold;
+  }
+
+  .restaurant-card-expanded-distance {
+    @apply mb-4 flex items-center gap-2 rounded-lg bg-[#edf0e1] p-3;
+  }
+
+  .restaurant-card-expanded-distance-icon {
+    @apply text-lg text-[#a3b18a]!;
+  }
+
+  .restaurant-card-expanded-distance-label {
+    @apply block text-sm font-medium text-[#a3b18a];
+  }
+
+  .restaurant-card-expanded-distance-value {
+    @apply text-lg font-bold text-[#a3b18a];
+  }
+
+  .restaurant-card-expanded-categories-label {
+    @apply mb-2 block font-semibold;
+  }
+
+  .restaurant-card-expanded-categories-list {
+    @apply mb-2;
+  }
+
+  .restaurant-card-expanded-category-tag {
+    @apply m-0;
+  }
+}

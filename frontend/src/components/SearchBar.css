@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@layer components {
+  .search-bar-container {
+    @apply relative;
+  }
+
+  .search-bar-clear {
+    @apply cursor-pointer text-gray-500;
+  }
+
+  .search-bar-clear-visible {
+    @apply visible;
+  }
+
+  .search-bar-clear-hidden {
+    @apply invisible;
+  }
+}

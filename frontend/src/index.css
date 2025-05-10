@@ -17,6 +17,8 @@
   --color-primary: var(--primary-color);
   --color-background: var(--background-color);
   --color-foreground: var(--foreground-color);
+
+  --animate-zoom-from-point: expandCard 0.2s ease-out forwards;
 }
 
 @layer base {
@@ -39,7 +41,6 @@
 @layer utilities {
   .container {
     width: 100%;
-    max-width: 1200px;
     margin: 0 auto;
     padding: 1rem;
   }
@@ -49,6 +50,33 @@
   .container {
     padding: 0.75rem;
   }
+}
+
+/* Animation keyframes */
+@keyframes expandCard {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
 }
 
 @import "tailwindcss/utilities.css" layer(utilities);

@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@layer components {
+  .hero-container {
+    @apply relative h-72 w-full;
+  }
+
+  .hero-content {
+    @apply w-full text-center;
+  }
+
+  .hero-title {
+    @apply text-4xl font-bold md:text-5xl lg:text-6xl;
+    margin-bottom: 8px;
+  }
+
+  .hero-subtitle {
+    @apply text-xl md:text-2xl;
+    margin-bottom: 16px;
+  }
+
+  .hero-search {
+    @apply mx-auto w-full max-w-3xl;
+  }
+
+  .hero-search-bar {
+    @apply rounded-lg shadow-xl;
+  }
+}
