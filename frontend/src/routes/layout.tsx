@@ -2,20 +2,23 @@ import { Outlet } from "react-router";
 import { Layout } from "antd";
 import AppHeader from "../components/Header";
 import { SearchProvider } from "../contexts/search";
+import { LocationProvider } from "../contexts/location";
+import LocationRequestCard from "../components/LocationRequestCard";
 
 const { Content } = Layout;
 
 export default function AppLayout() {
   return (
-    <SearchProvider>
-      <Layout>
-        <AppHeader />
-        <Content>
-          <main className="container min-h-screen">
+    <LocationProvider>
+      <SearchProvider>
+        <Layout>
+          <AppHeader />
+          <Content>
             <Outlet />
-          </main>
-        </Content>
-      </Layout>
-    </SearchProvider>
+            <LocationRequestCard />
+          </Content>
+        </Layout>
+      </SearchProvider>
+    </LocationProvider>
   );
 }
