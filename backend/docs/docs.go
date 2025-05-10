@@ -154,7 +154,7 @@ const docTemplate = `{
                 "summary": "Get a restaurant",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Restaurant ID",
                         "name": "id",
                         "in": "path",
@@ -602,7 +602,7 @@ const docTemplate = `{
                 },
                 "id": {
                     "description": "Unique identifier of the restaurant",
-                    "type": "integer"
+                    "type": "string"
                 },
                 "latitude": {
                     "description": "Latitude and longitude coordinates of the restaurant",

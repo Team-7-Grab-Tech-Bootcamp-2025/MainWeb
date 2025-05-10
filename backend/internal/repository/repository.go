@@ -16,12 +16,12 @@ type Repository interface {
 	FindByID(id uint) (*model.Todo, error)
 	Update(todo *model.Todo) error
 	Delete(id uint) error
-	FindRestaurantByID(id int, lat float64, lng float64) (*model.Restaurant, error)
+	FindRestaurantByID(id string, lat float64, lng float64) (*model.Restaurant, error)
 	FindAllFoodTypes() ([]string, error)
-	FindDishesByRestaurantID(id int) ([]model.Dish, error)
-	FindFoodTypesByRestaurantID(id int) ([]string, error)
-	CalculateLabelsRating(id int) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
-	FindPlatformsAndRatingsByRestaurantID(id int) ([]string, []float64, error)
+	FindDishesByRestaurantID(id string) ([]model.Dish, error)
+	FindFoodTypesByRestaurantID(id string) ([]string, error)
+	CalculateLabelsRating(id string) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
+	FindPlatformsAndRatingsByRestaurantID(id string) ([]string, []float64, error)
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 }
 
@@ -89,13 +89,11 @@ func (r *repository) Delete(id uint) error {
 // Haversine function to calculate distance between two points on the Earth
 func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	const R = 6371 // Radius of the Earth in kilometers
-	
 
 	lat1Rad := lat1 * math.Pi / 180
 	lat2Rad := lat2 * math.Pi / 180
 	deltaLat := (lat2 - lat1) * math.Pi / 180
 	deltaLon := (lon2 - lon1) * math.Pi / 180
-
 
 	a := math.Sin(deltaLat/2)*math.Sin(deltaLat/2) +
 		math.Cos(lat1Rad)*math.Cos(lat2Rad)*
@@ -104,11 +102,11 @@ func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 	return R * c
 }
 
-func (r *repository) FindRestaurantByID(id int, lat float64, lng float64) (*model.Restaurant, error) {
+func (r *repository) FindRestaurantByID(id string, lat float64, lng float64) (*model.Restaurant, error) {
 	query := "SELECT restaurant_id, restaurant_name, latitude, longitude, address, restaurant_rating, review_count, city_id, district_id, Food_type.food_type_name FROM Restaurant JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id WHERE restaurant_id = ?"
 	row := r.db.QueryRow(query, id)
 
-	log.Info().Msgf("Executing query: %s with id: %d", query, id)
+	log.Info().Msgf("Executing query: %s with id: %s", query, id)
 
 	var restaurant model.Restaurant
 	if err := row.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Latitude, &restaurant.Longitude, &restaurant.Address, &restaurant.Rating, &restaurant.ReviewCount, &restaurant.CityID, &restaurant.DistrictID, &restaurant.FoodType); err != nil {
@@ -150,7 +148,7 @@ func (r *repository) FindAllFoodTypes() ([]string, error) {
 	return foodTypes, nil
 }
 
-func (r *repository) FindDishesByRestaurantID(id int) ([]model.Dish, error) {
+func (r *repository) FindDishesByRestaurantID(id string) ([]model.Dish, error) {
 	query := "SELECT item_name, price FROM Dish WHERE restaurant_id = ?"
 	rows, err := r.db.Query(query, id)
 	if err != nil {
@@ -172,7 +170,7 @@ func (r *repository) FindDishesByRestaurantID(id int) ([]model.Dish, error) {
 	return dishes, nil
 }
 
-func (r *repository) FindFoodTypesByRestaurantID(id int) ([]string, error) {
+func (r *repository) FindFoodTypesByRestaurantID(id string) ([]string, error) {
 	query := "SELECT food_type_name FROM Food_type WHERE restaurant_id = ?"
 	rows, err := r.db.Query(query, id)
 	if err != nil {
@@ -194,7 +192,7 @@ func (r *repository) FindFoodTypesByRestaurantID(id int) ([]string, error) {
 	return foodTypes, nil
 }
 
-func (r *repository) CalculateLabelsRating(id int) (float64, int, float64, int, float64, int, float64, int, float64, int, error) {
+func (r *repository) CalculateLabelsRating(id string) (float64, int, float64, int, float64, int, float64, int, float64, int, error) {
 	query := `SELECT label, AVG(rating_label), COUNT(rating_label) 
 	FROM Review JOIN Feedback_label ON Review.rating_id = Feedback_label.rating_id 
 	WHERE restaurant_id = ? GROUP BY label`
@@ -240,7 +238,7 @@ func (r *repository) CalculateLabelsRating(id int) (float64, int, float64, int, 
 	return ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, nil
 }
 
-func (r *repository) FindPlatformsAndRatingsByRestaurantID(id int) ([]string, []float64, error) {
+func (r *repository) FindPlatformsAndRatingsByRestaurantID(id string) ([]string, []float64, error) {
 	query := `SELECT Platform.platform_name, Temp.restaurant_rating 
 	FROM Temp JOIN Platform ON Temp.platform_id = Platform.platform_id 
 	WHERE Temp.restaurant_id = ?`
