@@ -100,11 +100,6 @@ func (s *service) GetRestaurantDetail(id string, lat float64, lng float64) (*mod
 	if err != nil {
 		return nil, err
 	}
-
-	dishes, err := s.GetDishesByRestaurantID(id)
-	if err != nil {
-		return nil, err
-	}
 	labelsRating, err := s.GetLabelsRating(id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get labels rating")
@@ -119,7 +114,6 @@ func (s *service) GetRestaurantDetail(id string, lat float64, lng float64) (*mod
 
 	restaurantDetail := &model.RestaurantDetail{
 		Restaurant:      *restaurant,
-		Dishes:          dishes,
 		Labels:          *labelsRating,
 		Platforms:       platforms,
 		RatingPlatforms: ratings,

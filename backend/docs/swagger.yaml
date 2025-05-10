@@ -75,11 +75,6 @@ definitions:
     type: object
   model.RestaurantDetail:
     properties:
-      dishes:
-        description: List of dishes available at the restaurant
-        items:
-          $ref: '#/definitions/model.Dish'
-        type: array
       labels:
         allOf:
         - $ref: '#/definitions/model.LabelsRating'
@@ -99,7 +94,11 @@ definitions:
           type: number
         type: array
       restaurant:
-        $ref: '#/definitions/model.Restaurant'
+        allOf:
+        - $ref: '#/definitions/model.Restaurant'
+        description: |-
+          Information about the restaurant
+          This includes the restaurant's ID, name, address, etc.
     type: object
 host: localhost:8080
 info:
@@ -227,6 +226,42 @@ paths:
           schema:
             $ref: '#/definitions/model.Response'
       summary: Get a restaurant
+      tags:
+      - restaurants
+  /api/v1/restaurants/{id}/menu:
+    get:
+      consumes:
+      - application/json
+      description: get restaurant menu by ID
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Dish'
+                  type: array
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get restaurant menu
       tags:
       - restaurants
   /health:

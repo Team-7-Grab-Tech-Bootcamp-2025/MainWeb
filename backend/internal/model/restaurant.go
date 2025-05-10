@@ -28,9 +28,9 @@ type Restaurant struct {
 }
 
 type RestaurantDetail struct{
+	// Information about the restaurant
+	// This includes the restaurant's ID, name, address, etc.
 	Restaurant Restaurant `json:"restaurant"`
-	// List of dishes available at the restaurant
-	Dishes []Dish `json:"dishes"`
 	// Ratings for different aspects of the restaurant
 	// Ambience, delivery, food, price, and service ratings
 	Labels LabelsRating `json:"labels"`

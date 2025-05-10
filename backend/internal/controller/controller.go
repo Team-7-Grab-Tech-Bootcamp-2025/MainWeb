@@ -30,7 +30,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 		{
 			restaurants.GET("/:id", c.GetRestaurantDetailByID)
 			restaurants.GET("", c.GetNearbyRestaurants)
-			//restaurants.GET("/:id/menu", c.GetRestaurantMenuByID)
+			restaurants.GET("/:id/menu", c.GetRestaurantMenuByID)
 		}
 		v1.GET("foodtypes", c.GetAllFoodTypes)
 	}
@@ -191,4 +191,33 @@ func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.NewResponse(message, restaurants))
 }
 
+// GetRestaurantMenuByID godoc
+// @Summary Get restaurant menu
+// @Description get restaurant menu by ID
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Param id path string true "Restaurant ID"
+// @Success 200 {object} model.Response{data=[]model.Dish}
+// @Failure 404 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /api/v1/restaurants/{id}/menu [get]
+func (c *Controller) GetRestaurantMenuByID(ctx *gin.Context) {
+	log.Info().Msg("Fetching restaurant menu by ID")
 
+	// Get restaurant ID from URL parameters
+	id := ctx.Param("id")
+
+	// Fetch the menu using the service layer
+	menu, err := c.service.GetDishesByRestaurantID(id)
+	if err != nil {
+		if err.Error() == "not found" {
+			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))
+		} else {
+			ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch restaurant menu", nil))
+		}
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant menu fetched successfully", menu))
+}

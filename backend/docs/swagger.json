@@ -205,6 +205,65 @@
                 }
             }
         },
+        "/api/v1/restaurants/{id}/menu": {
+            "get": {
+                "description": "get restaurant menu by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Get restaurant menu",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Restaurant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Dish"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "get the status of server.",
@@ -337,13 +396,6 @@
         "model.RestaurantDetail": {
             "type": "object",
             "properties": {
-                "dishes": {
-                    "description": "List of dishes available at the restaurant",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Dish"
-                    }
-                },
                 "labels": {
                     "description": "Ratings for different aspects of the restaurant\nAmbience, delivery, food, price, and service ratings",
                     "allOf": [
@@ -367,7 +419,12 @@
                     }
                 },
                 "restaurant": {
-                    "$ref": "#/definitions/model.Restaurant"
+                    "description": "Information about the restaurant\nThis includes the restaurant's ID, name, address, etc.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.Restaurant"
+                        }
+                    ]
                 }
             }
         }
