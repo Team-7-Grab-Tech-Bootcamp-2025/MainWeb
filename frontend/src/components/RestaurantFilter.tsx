@@ -56,10 +56,24 @@ export default function RestaurantFilter({
     }
   };
 
+  const handleSelectAllDistricts = (checked: boolean) => {
+    if (checked) {
+      onDistrictChange(availableDistricts.map((district) => district.id));
+    } else {
+      onDistrictChange([]);
+    }
+  };
+
   const handleCityChange = (cityKey: CityKey) => {
     setSelectedCity(cityKey);
     onDistrictChange([]);
   };
+
+  const isAllDistrictsSelected =
+    availableDistricts.length > 0 &&
+    availableDistricts.every((district) =>
+      selectedDistricts.includes(district.id),
+    );
 
   return (
     <div className="relative">
@@ -116,6 +130,14 @@ export default function RestaurantFilter({
               Quận
             </Text>
             <div className="filter-districts-list">
+              <div className="filter-district-item">
+                <Checkbox
+                  checked={isAllDistrictsSelected}
+                  onChange={(e) => handleSelectAllDistricts(e.target.checked)}
+                >
+                  Tất cả
+                </Checkbox>
+              </div>
               {availableDistricts.map((district) => (
                 <div key={district.id} className="filter-district-item">
                   <Checkbox

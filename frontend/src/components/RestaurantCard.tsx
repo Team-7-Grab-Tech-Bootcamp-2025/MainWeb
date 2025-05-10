@@ -269,25 +269,21 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
 
           <Divider className="my-3" />
 
-          <div>
-            <Text className="restaurant-card-expanded-categories-label">
-              Loại quán:
-            </Text>
-            <Flex
-              wrap
-              gap={4}
-              className="restaurant-card-expanded-categories-list"
-            >
-              {categories.map((category, index) => (
-                <Tag
-                  key={index}
-                  className="restaurant-card-expanded-category-tag"
-                >
-                  {category}
-                </Tag>
-              ))}
-            </Flex>
-          </div>
+          <Flex
+            wrap
+            gap={4}
+            className="restaurant-card-expanded-categories-list"
+          >
+            <Text>Quán này bán:</Text>
+            {categories.map((category, index) => (
+              <Tag
+                key={index}
+                className="restaurant-card-expanded-category-tag"
+              >
+                {category}
+              </Tag>
+            ))}
+          </Flex>
         </Card>
       )}
     </div>

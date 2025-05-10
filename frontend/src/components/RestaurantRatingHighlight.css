@@ -9,8 +9,12 @@
     @apply relative -mt-6 -mr-6 mb-6 -ml-6 rounded-t-lg bg-[#c99383] p-6 text-center;
   }
 
+  .rating-average-background {
+    @apply absolute -inset-2 rounded-full bg-[rgb(255,149,41)] opacity-70 blur-md;
+  }
+
   .rating-average {
-    @apply size-24 rounded-full bg-white shadow-lg;
+    @apply relative size-24 rounded-full bg-white shadow-lg;
   }
 
   .rating-average-text {
@@ -18,7 +22,7 @@
   }
 
   .rating-category-card {
-    @apply h-full bg-white text-center transition-all duration-300 hover:shadow-md;
+    @apply h-full bg-white text-center;
   }
 
   .rating-category-icon {

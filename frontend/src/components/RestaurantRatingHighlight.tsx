@@ -8,7 +8,7 @@ import {
 } from "../constants/categoryConstants";
 import "./RestaurantRatingHighlight.css";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 interface CategoryRatings {
   food: number;
@@ -20,10 +20,12 @@ interface CategoryRatings {
 
 interface RestaurantRatingHighlightProps {
   categoryRatings: CategoryRatings;
+  averageRating: number;
 }
 
 const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
   categoryRatings,
+  averageRating,
 }) => {
   const [animated, setAnimated] = useState(false);
 
@@ -34,10 +36,6 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
 
     return () => clearTimeout(timer);
   }, []);
-
-  const averageRating =
-    Object.values(categoryRatings).reduce((sum, rating) => sum + rating, 0) /
-    Object.values(categoryRatings).length;
 
   const categories = Object.keys(CATEGORY_NAMES).map((key) => {
     const categoryKey = key as RatingCategory;
@@ -58,15 +56,18 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
       {/* Average Rating Header */}
       <div className="rating-header">
         <Title level={2} className="text-white">
-          Restaurant Ratings
+          Điểm đánh giá chung
         </Title>
 
-        <Flex vertical align="center" className="mb-4">
-          <Flex className="rating-average" align="center" justify="center">
-            <Title level={1} className="rating-average-text">
-              {averageRating.toFixed(1)}
-            </Title>
-          </Flex>
+        <Flex vertical align="center">
+          <div className="relative">
+            <div className="rating-average-background"></div>
+            <Flex className="rating-average" align="center" justify="center">
+              <Title level={1} className="rating-average-text">
+                {averageRating.toFixed(1)}
+              </Title>
+            </Flex>
+          </div>
           <Rate
             allowHalf
             disabled
@@ -74,7 +75,6 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
             className="my-2"
             style={{ color: "#112d4e" }}
           />
-          <Text type="secondary">Overall rating across all categories</Text>
         </Flex>
       </div>
 
