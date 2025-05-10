@@ -1,8 +1,6 @@
 package service
 
 import (
-	"errors"
-	"skeleton-internship-backend/internal/dto"
 	"skeleton-internship-backend/internal/model"
 	"skeleton-internship-backend/internal/repository"
 
@@ -10,11 +8,6 @@ import (
 )
 
 type Service interface {
-	CreateTodo(input *dto.TodoCreate) (*model.Todo, error)
-	GetAllTodos() ([]model.Todo, error)
-	GetTodoByID(id uint) (*model.Todo, error)
-	UpdateTodo(id uint, input *dto.TodoCreate) (*model.Todo, error)
-	DeleteTodo(id uint) error
 	GetRestaurantByID(id string, lat float64, lng float64) (*model.Restaurant, error)
 	GetAllFoodTypes() ([]string, error)
 	GetDishesByRestaurantID(id string) ([]model.Dish, error)
@@ -30,70 +23,6 @@ type service struct {
 
 func NewService(repo repository.Repository) Service {
 	return &service{repo: repo}
-}
-
-func (s *service) CreateTodo(input *dto.TodoCreate) (*model.Todo, error) {
-	todo := &model.Todo{
-		Title:       input.Title,
-		Description: input.Description,
-		Status:      input.Status,
-	}
-
-	if todo.Status == "" {
-		todo.Status = "pending"
-	}
-
-	err := s.repo.Create(todo)
-	if err != nil {
-		return nil, err
-	}
-
-	return todo, nil
-}
-
-func (s *service) GetAllTodos() ([]model.Todo, error) {
-	return s.repo.FindAll()
-}
-
-func (s *service) GetTodoByID(id uint) (*model.Todo, error) {
-	todo, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-	return todo, nil
-}
-
-func (s *service) UpdateTodo(id uint, input *dto.TodoCreate) (*model.Todo, error) {
-	todo, err := s.repo.FindByID(id)
-	if err != nil {
-		return nil, err
-	}
-
-	todo.Title = input.Title
-	todo.Description = input.Description
-	if input.Status != "" {
-		todo.Status = input.Status
-	}
-
-	err = s.repo.Update(todo)
-	if err != nil {
-		return nil, err
-	}
-
-	return todo, nil
-}
-
-func (s *service) DeleteTodo(id uint) error {
-	todo, err := s.repo.FindByID(id)
-	if err != nil {
-		return err
-	}
-
-	if todo == nil {
-		return errors.New("todo not found")
-	}
-
-	return s.repo.Delete(id)
 }
 
 func (s *service) GetRestaurantByID(id string, lat float64, lng float64) (*model.Restaurant, error) {
@@ -171,11 +100,6 @@ func (s *service) GetRestaurantDetail(id string, lat float64, lng float64) (*mod
 	if err != nil {
 		return nil, err
 	}
-
-	dishes, err := s.GetDishesByRestaurantID(id)
-	if err != nil {
-		return nil, err
-	}
 	labelsRating, err := s.GetLabelsRating(id)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get labels rating")
@@ -190,7 +114,6 @@ func (s *service) GetRestaurantDetail(id string, lat float64, lng float64) (*mod
 
 	restaurantDetail := &model.RestaurantDetail{
 		Restaurant:      *restaurant,
-		Dishes:          dishes,
 		Labels:          *labelsRating,
 		Platforms:       platforms,
 		RatingPlatforms: ratings,
