@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@layer components {
+  .header {
+    @apply z-20 mx-auto h-18 w-full border-b border-none bg-[var(--background-color)] px-0 shadow-sm transition-all duration-300;
+    @apply lg:sticky lg:top-0;
+  }
+
+  .header-container {
+    @apply container mx-auto h-full;
+  }
+
+  .logo {
+    @apply h-22 w-auto object-contain;
+  }
+
+  .logo-nav-link {
+    @apply flex h-full items-center;
+  }
+
+  .nav-links {
+    @apply -ml-4;
+  }
+
+  .nav-link {
+    @apply text-xs font-bold text-nowrap text-[var(--text-color)] hover:text-[var(--primary-color)] md:text-lg;
+  }
+
+  .search-container {
+    @apply w-full max-w-lg transition-all duration-300 ease-in-out;
+  }
+
+  .search-bar {
+    @apply rounded-lg shadow-sm;
+  }
+}

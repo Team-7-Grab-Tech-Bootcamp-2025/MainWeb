@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@layer components {
+  .restaurant-list-container {
+    @apply min-h-[60vh];
+  }
+
+  .restaurant-list-loading {
+    @apply py-12;
+  }
+
+  .restaurant-list-pagination {
+    @apply mt-8 flex justify-center;
+  }
+
+  .restaurant-list-empty {
+    @apply my-16;
+  }
+}
