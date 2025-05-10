@@ -11,11 +11,10 @@ type Service interface {
 	GetRestaurantByID(id string, lat float64, lng float64) (*model.Restaurant, error)
 	GetAllFoodTypes() ([]string, error)
 	GetDishesByRestaurantID(id string) ([]model.Dish, error)
-	// GetFoodTypesByRestaurantID(id string) ([]string, error)
-	GetLabelsRating(id string) (*model.LabelsRating, error)
+	// GetFoodTypesByRestaurantID(id string) ([]string, error)	GetLabelsRating(id string) (*model.LabelsRating, error)
 	GetRestaurantDetail(id string, lat float64, lng float64) (*model.RestaurantDetail, error)
 	GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
-	GetRestaurantReviewsByLabel(id string, label string, page int) (*model.ReviewResponse, error)
+	GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool) (*model.ReviewResponse, error)
 }
 
 type service struct {
@@ -133,17 +132,16 @@ func (s *service) GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Res
 	return restaurants, nil
 }
 
-func (s *service) GetRestaurantReviewsByLabel(id string, label string, page int) (*model.ReviewResponse, error) {
-	log.Info().Msgf("Fetching reviews for restaurant ID: %d with label: %s on page: %d", id, label, page)
+func (s *service) GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool) (*model.ReviewResponse, error) {
+	log.Info().Msgf("Fetching reviews for restaurant ID: %s with label: %s on page: %d, isCount: %v", id, label, page, isCount)
 
 	// Check if restaurant exists
 	_, err := s.GetRestaurantByID(id, 0, 0)
 	if err != nil {
 		return nil, err
 	}
-
 	// Get reviews from repository
-	reviews, totalReviews, err := s.repo.FindReviewsByRestaurantIDAndLabel(id, label, page)
+	reviews, totalReviews, err := s.repo.FindReviewsByRestaurantIDAndLabel(id, label, page, isCount)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to fetch reviews by restaurant ID and label")
 		return nil, err

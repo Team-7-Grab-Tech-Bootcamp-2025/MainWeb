@@ -19,7 +19,7 @@ type Repository interface {
 	CalculateLabelsRating(id string) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
 	FindPlatformsAndRatingsByRestaurantID(id string) ([]string, []float64, error)
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
-	FindReviewsByRestaurantIDAndLabel(id string, label string, page int) ([]model.Review, int, error)
+	FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error)
 }
 
 type repository struct {
@@ -309,8 +309,8 @@ func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model
 	return restaurants, nil
 }
 
-func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, page int) ([]model.Review, int, error) {
-	log.Info().Msgf("Finding reviews for restaurant ID: %s with label: %s on page: %d", id, label, page)
+func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error) {
+	log.Info().Msgf("Finding reviews for restaurant ID: %s with label: %s on page: %d, isCount: %v", id, label, page, isCount)
 
 	// Calculate offset based on page number (24 reviews per page)
 	offset := (page - 1) * 24
@@ -374,24 +374,28 @@ func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, 
 		reviews = append(reviews, review)
 	}
 
-	// Query to get total count
-	countQuery := `
-		SELECT 
-			COUNT(*)
-		FROM 
-			Review r
-		JOIN 
-			Feedback_label fl ON r.rating_id = fl.rating_id
-		WHERE 
-			r.restaurant_id = ? 
-			AND fl.label = ?
-	`
-
 	var totalReviews int
-	err = r.db.QueryRow(countQuery, id, label).Scan(&totalReviews)
-	if err != nil {
-		log.Error().Err(err).Msg("Error executing query to count reviews")
-		return nil, 0, err
+
+	// Only execute count query if isCount is true
+	if isCount {
+		// Query to get total count
+		countQuery := `
+			SELECT 
+				COUNT(*)
+			FROM 
+				Review r
+			JOIN 
+				Feedback_label fl ON r.rating_id = fl.rating_id
+			WHERE 
+				r.restaurant_id = ? 
+				AND fl.label = ?
+		`
+
+		err = r.db.QueryRow(countQuery, id, label).Scan(&totalReviews)
+		if err != nil {
+			log.Error().Err(err).Msg("Error executing query to count reviews")
+			return nil, 0, err
+		}
 	}
 
 	return reviews, totalReviews, nil

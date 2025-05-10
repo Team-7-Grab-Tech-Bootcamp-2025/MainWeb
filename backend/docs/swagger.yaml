@@ -100,6 +100,33 @@ definitions:
           Information about the restaurant
           This includes the restaurant's ID, name, address, etc.
     type: object
+  model.Review:
+    description: This struct is used to represent a review in the system
+    properties:
+      feedback:
+        type: string
+      label:
+        type: string
+      rating:
+        type: number
+      rating_id:
+        type: string
+      rating_label:
+        type: number
+      review_time:
+        type: string
+      username:
+        type: string
+    type: object
+  model.ReviewResponse:
+    properties:
+      reviews:
+        items:
+          $ref: '#/definitions/model.Review'
+        type: array
+      total_reviews:
+        type: integer
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -262,6 +289,55 @@ paths:
           schema:
             $ref: '#/definitions/model.Response'
       summary: Get restaurant menu
+      tags:
+      - restaurants
+  /api/v1/restaurants/{id}/reviews:
+    get:
+      consumes:
+      - application/json
+      description: get restaurant reviews by ID and label
+      parameters:
+      - description: Restaurant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Label type (Ambience, Delivery, Food, Price, Service)
+        in: query
+        name: label
+        required: true
+        type: string
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: true
+        description: Whether to count total reviews
+        in: query
+        name: count
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.ReviewResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Get restaurant reviews by label
       tags:
       - restaurants
   /health:

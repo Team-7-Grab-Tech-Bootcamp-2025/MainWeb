@@ -201,6 +201,7 @@ func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
 // @Param id path int true "Restaurant ID"
 // @Param label query string true "Label type (Ambience, Delivery, Food, Price, Service)"
 // @Param page query int false "Page number" default(1)
+// @Param count query boolean false "Whether to count total reviews" default(true)
 // @Success 200 {object} model.Response{data=model.ReviewResponse}
 // @Failure 400 {object} model.Response
 // @Failure 404 {object} model.Response
@@ -228,7 +229,6 @@ func (c *Controller) GetRestaurantReviewsByLabel(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid label. Must be one of: Ambience, Delivery, Food, Price, Service", nil))
 		return
 	}
-
 	// Extract and validate page parameter
 	pageStr := ctx.DefaultQuery("page", "1")
 	page, err := strconv.Atoi(pageStr)
@@ -237,8 +237,12 @@ func (c *Controller) GetRestaurantReviewsByLabel(ctx *gin.Context) {
 		return
 	}
 
+	// Check if count parameter is provided
+	countStr := ctx.DefaultQuery("count", "true")
+	isCount := countStr == "true"
+
 	// Get reviews from service
-	reviewResponse, err := c.service.GetRestaurantReviewsByLabel(id, label, page)
+	reviewResponse, err := c.service.GetRestaurantReviewsByLabel(id, label, page, isCount)
 	if err != nil {
 		if err.Error() == "not found" {
 			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))
