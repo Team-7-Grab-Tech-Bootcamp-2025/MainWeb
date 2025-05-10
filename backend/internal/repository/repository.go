@@ -19,7 +19,7 @@ type Repository interface {
 	CalculateLabelsRating(id string) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
 	FindPlatformsAndRatingsByRestaurantID(id string) ([]string, []float64, error)
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
-	FindReviewsByRestaurantIDAndLabel(id int, label string, page int) ([]model.Review, int, error)
+	FindReviewsByRestaurantIDAndLabel(id string, label string, page int) ([]model.Review, int, error)
 }
 
 type repository struct {
@@ -29,7 +29,6 @@ type repository struct {
 func NewRepository(db *sql.DB) Repository {
 	return &repository{db: db}
 }
-
 
 // Haversine function to calculate distance between two points on the Earth
 func haversine(lat1, lon1, lat2, lon2 float64) float64 {
@@ -310,8 +309,8 @@ func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model
 	return restaurants, nil
 }
 
-func (r *repository) FindReviewsByRestaurantIDAndLabel(id int, label string, page int) ([]model.Review, int, error) {
-	log.Info().Msgf("Finding reviews for restaurant ID: %d with label: %s on page: %d", id, label, page)
+func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, page int) ([]model.Review, int, error) {
+	log.Info().Msgf("Finding reviews for restaurant ID: %s with label: %s on page: %d", id, label, page)
 
 	// Calculate offset based on page number (24 reviews per page)
 	offset := (page - 1) * 24

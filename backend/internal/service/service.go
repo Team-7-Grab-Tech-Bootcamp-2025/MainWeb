@@ -15,7 +15,7 @@ type Service interface {
 	GetLabelsRating(id string) (*model.LabelsRating, error)
 	GetRestaurantDetail(id string, lat float64, lng float64) (*model.RestaurantDetail, error)
 	GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
-	GetRestaurantReviewsByLabel(id int, label string, page int) (*model.ReviewResponse, error)
+	GetRestaurantReviewsByLabel(id string, label string, page int) (*model.ReviewResponse, error)
 }
 
 type service struct {
@@ -133,7 +133,7 @@ func (s *service) GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Res
 	return restaurants, nil
 }
 
-func (s *service) GetRestaurantReviewsByLabel(id int, label string, page int) (*model.ReviewResponse, error) {
+func (s *service) GetRestaurantReviewsByLabel(id string, label string, page int) (*model.ReviewResponse, error) {
 	log.Info().Msgf("Fetching reviews for restaurant ID: %d with label: %s on page: %d", id, label, page)
 
 	// Check if restaurant exists

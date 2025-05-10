@@ -208,14 +208,7 @@ func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
 func (c *Controller) GetRestaurantReviewsByLabel(ctx *gin.Context) {
 	log.Info().Msg("Fetching restaurant reviews by label")
 
-	// Extract and validate path parameters
-	id, err := strconv.Atoi(ctx.Param("id"))
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid restaurant ID format", nil))
-		return
-	}
-
-	// Extract and validate query parameters
+	id := ctx.Param("id")
 	label := ctx.Query("label")
 	if label == "" {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Label parameter is required", nil))
@@ -272,7 +265,6 @@ func (c *Controller) GetRestaurantReviewsByLabel(ctx *gin.Context) {
 func (c *Controller) GetRestaurantMenuByID(ctx *gin.Context) {
 	log.Info().Msg("Fetching restaurant menu by ID")
 
-	// Get restaurant ID from URL parameters
 	id := ctx.Param("id")
 
 	// Fetch the menu using the service layer
