@@ -18,7 +18,7 @@ export function useLocation(): LocationState {
 
   const requestLocation = () => {
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
+      setError("Trình duyệt của bạn không hỗ trợ việc truy xuất vị trí");
       return;
     }
 
@@ -47,8 +47,8 @@ export function useLocation(): LocationState {
       (error) => {
         setError(
           error.code === 1
-            ? "Location permission denied. You can enable it in your settings."
-            : "Unable to retrieve your location",
+            ? "Quyền truy xuất vị trí đã bị từ chối. Bạn có thể bật nó trong cài đặt của bạn."
+            : "Không thể truy xuất vị trí của bạn",
         );
         setLoading(false);
         localStorage.setItem("locationPermission", "denied");
