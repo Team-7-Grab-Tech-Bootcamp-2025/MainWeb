@@ -66,6 +66,35 @@
                 }
             }
         },
+        "/api/v1/recalculate": {
+            "post": {
+                "description": "Recalculates ratings and review counts for all restaurants based on reviews and feedback labels",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Recalculate restaurant ratings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/restaurants": {
             "get": {
                 "description": "get restaurants with various filter options including location, food type, city, district, etc. Accepct limit or page (if page is specified, limit will be ignored)\nIf lat and lng are provided, it will return nearby restaurants sorted by distance.\nIf lat and lng are not provided, it will sort by rating only.\nIf count is true, it will return the total count of restaurants matching the filter criteria.\nIf neither page nor limit is specified, it will return the first 30 restaurants.",

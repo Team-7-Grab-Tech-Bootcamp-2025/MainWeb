@@ -120,67 +120,114 @@ def save_sql_file(file_path, lines):
     # Get the base file name and extension
     file_dir, file_name = os.path.split(file_path)
     file_base, file_ext = os.path.splitext(file_name)
-      # If headers will be included in each part, estimate their size
-    header_lines = []
-    data_lines = []
     
-    # Identify header lines (e.g., USE database statement, comments)
+    # Ensure we have a "USE angi_db;" statement at the beginning
+    if not any(line.startswith('USE angi_db;') for line in lines):
+        lines.insert(0, 'USE angi_db;')
+    
+    # Process the lines to properly identify SQL batches (complete INSERT statements)
+    processed_lines = []
+    current_insert = []
+    in_insert = False
+    
     for line in lines:
-        if line.startswith('USE ') or line.startswith('--') or line == '':
-            header_lines.append(line)
+        # Start of a new INSERT statement
+        if line.startswith('INSERT INTO'):
+            if in_insert and current_insert:
+                # Save the previous insert statement
+                processed_lines.append(current_insert)
+                current_insert = []
+            in_insert = True
+            current_insert.append(line)
+        # Part of an ongoing INSERT or header/comment
+        elif in_insert and (line.endswith(';') or not line.strip()):
+            # End of the current INSERT statement
+            current_insert.append(line)
+            processed_lines.append(current_insert)
+            current_insert = []
+            in_insert = False
+        elif in_insert:
+            # Middle of an INSERT statement
+            current_insert.append(line)
         else:
-            data_lines.append(line)
-            
-    # Calculate size of headers (they'll be included in each part)
-    headers_text = '\n'.join(header_lines)
-    headers_size = len(headers_text.encode('utf-8'))
+            # Headers, comments, or other non-INSERT lines
+            processed_lines.append([line])
+    
+    # Handle any remaining INSERT statement
+    if in_insert and current_insert:
+        processed_lines.append(current_insert)
     
     # Calculate total size
-    data_text = '\n'.join(data_lines)
-    data_size = len(data_text.encode('utf-8'))
-    total_size = headers_size + data_size
+    total_size = 0
+    for lines_group in processed_lines:
+        total_size += len('\n'.join(lines_group).encode('utf-8'))
+    
+    # Find headers (USE statements and comments)
+    headers = []
+    for lines_group in processed_lines:
+        if len(lines_group) == 1 and (lines_group[0].startswith('USE ') or 
+                                     lines_group[0].startswith('--') or 
+                                     not lines_group[0].strip()):
+            headers.append(lines_group[0])
     
     # If file size exceeds the limit, split it
     if total_size > MAX_FILE_SIZE:
         print(f"Warning: File size ({total_size / (1024 * 1024):.2f}MB) exceeds GitHub limit (95MB). Splitting file.")
         
-        # Calculate the maximum size for data in each part (accounting for headers)
-        max_data_size_per_part = MAX_FILE_SIZE - headers_size - 1024  # 1KB buffer
+        # Calculate approximate number of parts needed
+        num_parts = (total_size // MAX_FILE_SIZE) + 1
+        
+        # Find all the complete INSERT statements
+        insert_statements = []
+        for lines_group in processed_lines:
+            if len(lines_group) > 1 and lines_group[0].startswith('INSERT INTO'):
+                insert_statements.append(lines_group)
+        
+        # Calculate size per part (approximately)
+        inserts_per_part = len(insert_statements) // num_parts
+        if inserts_per_part == 0:
+            inserts_per_part = 1
         
         # Split and save files
         current_part = 1
         total_parts = 0
-        remaining_data = data_lines.copy()
+        remaining_inserts = insert_statements.copy()
         
-        while remaining_data:
+        while remaining_inserts:
             # Create a new part with headers
-            part_lines = header_lines.copy()
+            part_lines = headers.copy()
             
             # Add comment indicating this is a split file
             part_lines.insert(0, f"-- Split file part {current_part}, generated from {file_name}")
             
-            # Build up this part until we reach the size limit
-            current_part_data = []
-            current_part_size = 0
-            while remaining_data and current_part_size < max_data_size_per_part:
-                next_line = remaining_data[0]
-                next_line_size = len((next_line + '\n').encode('utf-8'))
+            # Add USE statement if not already present
+            if not any(line.startswith('USE angi_db;') for line in part_lines):
+                part_lines.insert(1, 'USE angi_db;')
+            
+            # Calculate how many INSERT statements to include in this part
+            # Don't exceed MAX_FILE_SIZE
+            current_part_inserts = []
+            current_part_size = len('\n'.join(part_lines).encode('utf-8'))
+            
+            while remaining_inserts and current_part_size < MAX_FILE_SIZE - 1024:  # Keep 1KB buffer
+                next_insert = remaining_inserts[0]
+                next_insert_size = len('\n'.join(next_insert).encode('utf-8'))
                 
-                if current_part_size + next_line_size <= max_data_size_per_part:
-                    current_part_data.append(next_line)
-                    current_part_size += next_line_size
-                    remaining_data.pop(0)
+                if current_part_size + next_insert_size <= MAX_FILE_SIZE - 1024:
+                    current_part_inserts.extend(next_insert)
+                    current_part_size += next_insert_size
+                    remaining_inserts.pop(0)
                 else:
-                    # This line would push us over the limit
+                    # This insert would push us over the limit
                     break
-                    
-            # If we couldn't add any lines because a single line is too big,
-            # take at least one line to avoid infinite loop
-            if not current_part_data and remaining_data:
-                print(f"Warning: Very large SQL line detected in part {current_part}.")
-                current_part_data.append(remaining_data.pop(0))
-              # Add the data lines for this part
-            part_lines.extend(current_part_data)
+            
+            # If we couldn't add any inserts, add at least one to avoid infinite loop
+            if not current_part_inserts and remaining_inserts:
+                print(f"Warning: Very large INSERT statement detected in part {current_part}.")
+                current_part_inserts.extend(remaining_inserts.pop(0))
+            
+            # Add the inserts to this part
+            part_lines.extend(current_part_inserts)
             
             # Generate the filename for this part
             part_file_path = os.path.join(file_dir, f"{file_base}_part{current_part}{file_ext}")
@@ -211,7 +258,7 @@ def main():
     table_order = [
         #'Platform.csv', 'City.csv', 'District.csv', 'Food_type.csv', 
         #'User.csv', 'Restaurant.csv', 'Dish.csv', 
-        'Review.csv'
+        'Feedback_label.csv'
         #'Temp.csv'
     ]
     
@@ -225,7 +272,8 @@ def main():
         'Restaurant': 100,
         'Dish': 50,     # Smaller batch for potentially larger rows
         'Review': 25,   # Very small batch for likely largest table
-        'Temp': 200
+        'Temp': 200,
+        'Feedback_label': 100
     }
     
     # Keep track of total files generated
