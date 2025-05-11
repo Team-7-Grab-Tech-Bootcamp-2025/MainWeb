@@ -161,19 +161,19 @@ func (r *repository) CalculateLabelsRating(id string) (float64, int, float64, in
 		}
 
 		switch label {
-		case "Ambience":
+		case "ambience":
 			ambienceRating = rating
 			ambienceCount = count
-		case "Delivery":
+		case "delivery":
 			deliveryRating = rating
 			deliveryCount = count
-		case "Food":
+		case "food":
 			foodRating = rating
 			foodCount = count
-		case "Price":
+		case "price":
 			priceRating = rating
 			priceCount = count
-		case "Service":
+		case "service":
 			serviceRating = rating
 			serviceCount = count
 		}
