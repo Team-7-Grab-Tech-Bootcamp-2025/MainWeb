@@ -169,6 +169,26 @@ paths:
       summary: Get all food types
       tags:
       - foodtypes
+  /api/v1/recalculate:
+    post:
+      consumes:
+      - application/json
+      description: Recalculates ratings and review counts for all restaurants based
+        on reviews and feedback labels
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Recalculate restaurant ratings
+      tags:
+      - restaurants
   /api/v1/restaurants:
     get:
       consumes:

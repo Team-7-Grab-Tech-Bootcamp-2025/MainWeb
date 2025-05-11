@@ -36,6 +36,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 		}
 		v1.GET("/restaurants", c.GetRestaurantsByFilter)
 		v1.GET("/foodtypes", c.GetAllFoodTypes)
+		v1.POST("/recalculate", c.RecalculateRestaurants)
 	}
 }
 
@@ -377,4 +378,25 @@ func (c *Controller) AutocompleteRestaurants(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant suggestions fetched successfully", restaurants))
+}
+
+// RecalculateRestaurants godoc
+// @Summary Recalculate restaurant ratings
+// @Description Recalculates ratings and review counts for all restaurants based on reviews and feedback labels
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /api/v1/recalculate [post]
+func (c *Controller) RecalculateRestaurants(ctx *gin.Context) {
+	log.Info().Msg("Recalculating restaurant ratings")
+
+	err := c.service.RecalculateRestaurantsRating()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to recalculate restaurant ratings", nil))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant ratings recalculated successfully", nil))
 }
