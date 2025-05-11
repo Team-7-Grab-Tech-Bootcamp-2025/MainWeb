@@ -12,7 +12,7 @@ const { Title, Text } = Typography;
 const { useToken } = theme;
 
 interface RestaurantCardProps {
-  id: number;
+  id: string;
   name: string;
   rating: number;
   reviewCount: number;
@@ -27,7 +27,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   reviewCount = 0,
   categories,
   address,
-  id = 1,
+  id,
   distance,
 }) => {
   const { token } = useToken();

@@ -1,5 +1,5 @@
 import { Flex, Input } from "antd";
-import { useSearch, useSearchResults } from "../hooks/useSearch";
+import { useSearch, useQuickSearch } from "../hooks/useSearch";
 import { useState, useEffect, useRef } from "react";
 import SearchPopup from "./SearchPopup";
 import { CloseCircleFilled } from "@ant-design/icons";
@@ -18,7 +18,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
   size = "middle",
   className = "",
 }) => {
-  const { searchTerm, setSearchTerm, performSearch, isSearching } = useSearch();
+  const { searchTerm, setSearchTerm, performSearch } = useSearch();
+  const [isFocused, setIsFocused] = useState(false);
+  const { restaurants, isSearching, setIsCurrentlyUsing } = useQuickSearch(5);
   const [showPopup, setShowPopup] = useState(false);
   const [shouldShowPopup, setShouldShowPopup] = useState(false);
   const [debouncedShouldShow] = useDebounce(shouldShowPopup, 300);
@@ -30,14 +32,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   }, [debouncedShouldShow]);
 
-  const {
-    data: quickResults,
-    isLoading: isQuickSearching,
-    isFetched: isQuickSearchFetched,
-  } = useSearchResults(1, {
-    limit: 5,
-  });
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -46,17 +40,26 @@ const SearchBar: React.FC<SearchBarProps> = ({
       ) {
         setShowPopup(false);
         setShouldShowPopup(false);
+        setIsFocused(false);
+        setIsCurrentlyUsing(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+  }, [setIsCurrentlyUsing]);
 
   const handleFocus = () => {
+    setIsFocused(true);
+    setIsCurrentlyUsing(true);
     if (searchTerm.trim().length >= 1) {
       setShouldShowPopup(true);
     }
+  };
+
+  const handleBlur = () => {
+    // Don't immediately blur, as we might be clicking on the search results
+    // The click outside handler will take care of this
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,6 +81,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
     setShouldShowPopup(false);
   };
 
+  // Only show loading indicator when there's an actual search term and the search bar is focused
+  const showLoading = isSearching && searchTerm.trim().length > 0 && isFocused;
+
   return (
     <Flex ref={searchBarRef} className="search-bar-container">
       <Input.Search
@@ -88,8 +94,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
         onChange={handleChange}
         onSearch={handleSearch}
         onFocus={handleFocus}
+        onBlur={handleBlur}
         className={className}
-        loading={isSearching}
+        loading={showLoading}
         suffix={
           <CloseCircleFilled
             className={`search-bar-clear ${searchTerm ? "search-bar-clear-visible" : "search-bar-clear-hidden"}`}
@@ -98,14 +105,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
         }
       />
       <SearchPopup
-        results={quickResults || []}
-        isLoading={isQuickSearching}
-        visible={showPopup}
+        results={restaurants || []}
+        isLoading={showLoading}
+        visible={showPopup && isFocused}
         onSelect={() => {
           setShowPopup(false);
           setShouldShowPopup(false);
         }}
-        isFetched={isQuickSearchFetched}
+        isFetched={!isSearching}
       />
     </Flex>
   );

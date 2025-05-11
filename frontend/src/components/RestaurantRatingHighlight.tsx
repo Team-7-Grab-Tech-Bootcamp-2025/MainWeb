@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, Typography, Flex, Progress, Rate, Row, Col } from "antd";
+import { Card, Flex, Progress, Typography, Rate, Row, Col } from "antd";
 import type { RatingCategory } from "../constants/categoryConstants";
 import {
   CATEGORY_COLORS,
@@ -7,6 +7,7 @@ import {
   CATEGORY_NAMES,
 } from "../constants/categoryConstants";
 import "./RestaurantRatingHighlight.css";
+import type { RestaurantReviewLabel } from "../types/restaurant";
 
 const { Title } = Typography;
 
@@ -21,11 +22,15 @@ interface CategoryRatings {
 interface RestaurantRatingHighlightProps {
   categoryRatings: CategoryRatings;
   averageRating: number;
+  onLabelClick: (label: RestaurantReviewLabel) => void;
+  selectedLabel: RestaurantReviewLabel;
 }
 
 const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
   categoryRatings,
   averageRating,
+  onLabelClick,
+  selectedLabel,
 }) => {
   const [animated, setAnimated] = useState(false);
 
@@ -41,6 +46,7 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
     const categoryKey = key as RatingCategory;
     return {
       name: CATEGORY_NAMES[categoryKey],
+      key: categoryKey.toLowerCase() as RestaurantReviewLabel,
       rating: categoryRatings[categoryKey],
       icon: CATEGORY_ICONS[categoryKey],
       color: CATEGORY_COLORS[categoryKey],
@@ -85,7 +91,7 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
             xs={{ flex: "100%" }}
             md={{ flex: "50%" }}
             xl={{ flex: "20%" }}
-            key={category.name}
+            key={category.key}
             style={{
               transition: "all 0.5s ease",
               opacity: animated ? 1 : 0,
@@ -95,9 +101,10 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
           >
             <Card
               variant="borderless"
-              className="rating-category-card"
+              className={`rating-category-card ${category.key === selectedLabel ? "rating-category-selected" : ""}`}
               styles={{ body: { padding: "16px" } }}
               hoverable
+              onClick={() => onLabelClick(category.key)}
             >
               <Flex vertical align="center" justify="center" gap={0}>
                 <Flex
