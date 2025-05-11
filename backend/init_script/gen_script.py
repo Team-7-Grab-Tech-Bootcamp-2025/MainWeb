@@ -133,7 +133,7 @@ lines.append("")
 # Insert Feedback Labels
 lines.append("-- Feedback Labels")
 lines.append("INSERT INTO Feedback_label (feedback_label_id, label, rating_label, rating_id) VALUES ")
-labels = ["Food", "Service", "Delivery", "Price", "Ambience"]
+labels = ["food", "service", "delivery", "price", "ambience"]
 label_id = 1
 for rid in range(1, review_id):
     for _ in range(random.randint(1, 2)):  # about 300 total

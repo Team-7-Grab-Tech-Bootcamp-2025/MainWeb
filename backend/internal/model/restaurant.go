@@ -32,7 +32,7 @@ type RestaurantDetail struct{
 	// This includes the restaurant's ID, name, address, etc.
 	Restaurant Restaurant `json:"restaurant"`
 	// Ratings for different aspects of the restaurant
-	// Ambience, delivery, food, price, and service ratings
+	// ambience, delivery, food, price, and service ratings
 	Labels LabelsRating `json:"labels"`
 	// List of platforms where the restaurant is available
 	Platforms []string `json:"platforms"`

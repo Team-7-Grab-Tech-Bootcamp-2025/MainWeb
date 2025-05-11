@@ -34,7 +34,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 			restaurants.GET("/:id/menu", c.GetRestaurantMenuByID)
 			restaurants.GET("/:id/reviews", c.GetRestaurantReviewsByLabel)
 		}
-		v1.GET("/restaurants", c.GetNearbyRestaurants)
+		v1.GET("/restaurants", c.GetRestaurantsByFilter)
 		v1.GET("/foodtypes", c.GetAllFoodTypes)
 	}
 }
@@ -93,11 +93,11 @@ func (c *Controller) GetRestaurantDetailByID(ctx *gin.Context) {
 		}
 	}
 
-	// No need to convert ID to integer anymore, just use the string directly
 	id := ctx.Param("id")
 
 	restaurantDetail, err := c.service.GetRestaurantDetail(id, lat, lng)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to get restaurant detail")
 		if err.Error() == "not found" {
 			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))
 		} else {
@@ -129,29 +129,45 @@ func (c *Controller) GetAllFoodTypes(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, model.NewResponse("Food types fetched successfully", foodTypes))
 }
 
-// GetNearbyRestaurants godoc
-// @Summary Get nearby restaurants
-// @Description get top rated restaurants near specified coordinates
+// GetRestaurantsByFilter godoc
+// @Summary Get restaurants by filter
+// @Description get restaurants with various filter options including location, food type, city, district, etc. Accepct limit or page (if page is specified, limit will be ignored)
+// @Description If lat and lng are provided, it will return nearby restaurants sorted by distance.
+// @Description If lat and lng are not provided, it will sort by rating only.
+// @Description If count is true, it will return the total count of restaurants matching the filter criteria.
+// @Description If neither page nor limit is specified, it will return the first 30 restaurants.
 // @Tags restaurants
 // @Accept json
 // @Produce json
 // @Param lat query number false "Latitude" (optional)
 // @Param lng query number false "Longitude" (optional)
-// @Param limit query int false "Limit results" default(30)
+// @Param foodtype query string false "Food type" (optional)
+// @Param city query string false "City ID" (optional)
+// @Param district query string false "District ID" (optional)
+// @Param page query int false "Page number" (optional)
+// @Param limit query int false "Limit results" (optional, default: 30)
+// @Param count query bool false "Return total count" (optional) default(false)
 // @Success 200 {object} model.Response{data=[]model.Restaurant}
 // @Failure 400 {object} model.Response
 // @Failure 500 {object} model.Response
 // @Router /api/v1/restaurants [get]
-func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
-	log.Info().Msg("Fetching nearby restaurants")
+func (c *Controller) GetRestaurantsByFilter(ctx *gin.Context) {
+	log.Info().Msg("Fetching restaurants with filters")
 
 	var lat, lng float64
+	var page, limit int
+	var isCount bool
 	var err error
 
 	// Get query parameters
 	latStr := ctx.Query("lat")
 	lngStr := ctx.Query("lng")
-	limitStr := ctx.DefaultQuery("limit", "30")
+	foodType := ctx.Query("foodtype")
+	cityID := ctx.Query("city")
+	districtID := ctx.Query("district")
+	pageStr := ctx.Query("page")
+	limitStr := ctx.Query("limit")
+	countStr := ctx.DefaultQuery("count", "false")
 
 	// Parse lat/lng if provided, otherwise use 0 (which will sort by rating only)
 	if latStr != "" {
@@ -170,28 +186,61 @@ func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
 		}
 	}
 
-	// Parse limit
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit <= 0 {
-		limit = 10 // Default limit
+	// Parse page and limit
+	if pageStr != "" {
+		page, err = strconv.Atoi(pageStr)
+		if err != nil || page <= 0 {
+			ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid page number", nil))
+			return
+		}
+		// If page is specified, we don't need limit
+		limit = 0
+	} else if limitStr != "" {
+		// Only use limit if page is not specified
+		limit, err = strconv.Atoi(limitStr)
+		if err != nil || limit <= 0 {
+			limit = 30 // Default limit
+		}
+	} else {
+		limit = 30 // Default limit if neither page nor limit is specified
 	}
 
-	// Get restaurants, either by distance or just by rating if no coordinates
-	restaurants, err := c.service.GetNearbyRestaurants(lat, lng, limit)
+	// Parse count parameter
+	isCount, err = strconv.ParseBool(countStr)
+	if err != nil {
+		isCount = false
+	}
+
+	// Get restaurants with filters
+	restaurants, totalCount, err := c.service.GetRestaurantsByFilter(lat, lng, foodType, cityID, districtID, page, limit, isCount)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch restaurants", nil))
 		return
 	}
 
-	// If no lat/lng provided, we're returning top rated restaurants
+	// Prepare response message
 	var message string
 	if latStr == "" || lngStr == "" {
-		message = "Top rated restaurants fetched successfully"
+		message = "Filtered restaurants fetched successfully"
 	} else {
-		message = "Nearby restaurants fetched successfully"
+		message = "Filtered nearby restaurants fetched successfully"
 	}
 
-	ctx.JSON(http.StatusOK, model.NewResponse(message, restaurants))
+	// If count is requested, include it in the response
+	var response interface{}
+	if isCount {
+		response = struct {
+			Restaurants []model.Restaurant `json:"restaurants"`
+			TotalCount  int                `json:"totalCount"`
+		}{
+			Restaurants: restaurants,
+			TotalCount:  totalCount,
+		}
+	} else {
+		response = restaurants
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse(message, response))
 }
 
 // GetRestaurantReviewsByLabel godoc
@@ -200,7 +249,7 @@ func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
 // @Tags restaurants
 // @Accept json
 // @Produce json
-// @Param id path int true "Restaurant ID"
+// @Param id path string true "Restaurant ID"
 // @Param label query string true "Label type (ambience, delivery, food, price, service)"
 // @Param page query int true "Page number" default(1)
 // @Param count query boolean false "Whether to count total reviews" default(true)
@@ -220,15 +269,15 @@ func (c *Controller) GetRestaurantReviewsByLabel(ctx *gin.Context) {
 
 	// Validate label values
 	validLabels := map[string]bool{
-		"Ambience": true,
-		"Delivery": true,
-		"Food":     true,
-		"Price":    true,
-		"Service":  true,
+		"ambience": true,
+		"delivery": true,
+		"food":     true,
+		"price":    true,
+		"service":  true,
 	}
 
 	if !validLabels[label] {
-		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid label. Must be one of: Ambience, Delivery, Food, Price, Service", nil))
+		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid label. Must be one of: ambience, delivery, food, price, service", nil))
 		return
 	}
 	// Extract and validate page parameter
@@ -315,6 +364,8 @@ func (c *Controller) AutocompleteRestaurants(ctx *gin.Context) {
 
 	// Parse the query parameter into words, handling URL encoding (+ characters)
 	query = strings.Replace(query, "+", " ", -1)
+	query = strings.Replace(query, "%2B", "+", -1)
+	log.Info().Msgf("Parsed query: %s", query)
 	searchWords := strings.Fields(query)
 
 	// Get autocomplete results from service with the parsed words

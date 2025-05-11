@@ -11,8 +11,8 @@ type Service interface {
 	GetRestaurantByID(id string, lat float64, lng float64) (*model.Restaurant, error)
 	GetAllFoodTypes() ([]string, error)
 	GetDishesByRestaurantID(id string) ([]model.Dish, error)
-	// GetFoodTypesByRestaurantID(id string) ([]string, error)	GetLabelsRating(id string) (*model.LabelsRating, error)
 	GetRestaurantDetail(id string, lat float64, lng float64) (*model.RestaurantDetail, error)
+	GetRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error)
 	GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 	GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool) (*model.ReviewResponse, error)
 	GetRestaurantsByAutocomplete(searchWords []string, limit int) ([]model.Restaurant, error)
@@ -27,20 +27,18 @@ func NewService(repo repository.Repository) Service {
 }
 
 func (s *service) GetRestaurantByID(id string, lat float64, lng float64) (*model.Restaurant, error) {
-	log.Info().Msgf("Fetching restaurant with ID: %s", id)
 	restaurant, err := s.repo.FindRestaurantByID(id, lat, lng)
-	log.Info().Msgf("Restaurant found: %+v", restaurant)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to find restaurant by ID")
 		return nil, err
 	}
+	log.Info().Msgf("Restaurant found: %+v", restaurant)
 	return restaurant, nil
 }
 
 func (s *service) GetAllFoodTypes() ([]string, error) {
 	foodTypes, err := s.repo.FindAllFoodTypes()
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to get all food types")
+		log.Error().Err(err).Msg("Failed to get all food types (service)")
 		return nil, err
 	}
 	return foodTypes, nil
@@ -48,7 +46,7 @@ func (s *service) GetAllFoodTypes() ([]string, error) {
 func (s *service) GetDishesByRestaurantID(id string) ([]model.Dish, error) {
 	dishes, err := s.repo.FindDishesByRestaurantID(id)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to get dishes by restaurant ID")
+		log.Error().Err(err).Msg("Failed to get dishes by restaurant ID (service)")
 		return nil, err
 	}
 	return dishes, nil
@@ -66,7 +64,7 @@ func (s *service) GetDishesByRestaurantID(id string) ([]model.Dish, error) {
 func (s *service) GetLabelsRating(id string) (*model.LabelsRating, error) {
 	ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, err := s.repo.CalculateLabelsRating(id)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to calculate labels rating")
+		log.Error().Err(err).Msg("Failed to calculate labels rating (service)")
 		return nil, err
 	}
 
@@ -99,17 +97,19 @@ func (s *service) GetLabelsRating(id string) (*model.LabelsRating, error) {
 func (s *service) GetRestaurantDetail(id string, lat float64, lng float64) (*model.RestaurantDetail, error) {
 	restaurant, err := s.GetRestaurantByID(id, lat, lng)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to get restaurant by ID (service)")
 		return nil, err
 	}
+	log.Info().Msgf("Restaurant found (service): %+v", restaurant)
 	labelsRating, err := s.GetLabelsRating(id)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to get labels rating")
+		log.Error().Err(err).Msg("Failed to get labels rating by restaurant ID (service)")
 		return nil, err
 	}
 
 	platforms, ratings, err := s.repo.FindPlatformsAndRatingsByRestaurantID(id)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to get platforms and ratings")
+		log.Error().Err(err).Msg("Failed to get platforms and ratings by restaurant ID (service)")
 		return nil, err
 	}
 
@@ -127,10 +127,23 @@ func (s *service) GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Res
 	log.Info().Msgf("Finding nearby restaurants at coordinates (%f, %f) with limit %d", lat, lng, limit)
 	restaurants, err := s.repo.FindNearbyRestaurants(lat, lng, limit)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to find nearby restaurants")
+		log.Error().Err(err).Msg("Failed to find nearby restaurants (service)")
 		return nil, err
 	}
 	return restaurants, nil
+}
+
+func (s *service) GetRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error) {
+	log.Info().Msgf("Finding restaurants with filters - lat: %f, lng: %f, foodType: %s, cityID: %s, districtID: %s, page: %d, limit: %d, isCount: %v",
+		lat, lng, foodType, cityID, districtID, page, limit, isCount)
+
+	restaurants, totalCount, err := s.repo.FindRestaurantsByFilter(lat, lng, foodType, cityID, districtID, page, limit, isCount)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to find restaurants by filter (service)")
+		return nil, 0, err
+	}
+
+	return restaurants, totalCount, nil
 }
 
 func (s *service) GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool) (*model.ReviewResponse, error) {
@@ -144,7 +157,7 @@ func (s *service) GetRestaurantReviewsByLabel(id string, label string, page int,
 	// Get reviews from repository
 	reviews, totalReviews, err := s.repo.FindReviewsByRestaurantIDAndLabel(id, label, page, isCount)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to fetch reviews by restaurant ID and label")
+		log.Error().Err(err).Msg("Failed to fetch reviews by restaurant ID and label (service)")
 		return nil, err
 	}
 
@@ -159,9 +172,9 @@ func (s *service) GetRestaurantsByAutocomplete(searchWords []string, limit int) 
 	log.Info().Msgf("Autocompleting restaurants with search words: %v, limit: %d", searchWords, limit)
 
 	// Get restaurants from repository using the provided words
-	restaurants, err := s.repo.FindRestaurantsByNamePrefix(searchWords, limit)
+	restaurants, err := s.repo.FindRestaurantsByName(searchWords, limit)
 	if err != nil {
-		log.Error().Err(err).Msg("Failed to fetch restaurants for autocomplete")
+		log.Error().Err(err).Msg("Failed to fetch restaurants for autocomplete (service)")
 		return nil, err
 	}
 
