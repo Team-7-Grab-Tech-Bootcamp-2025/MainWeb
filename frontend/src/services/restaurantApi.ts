@@ -5,6 +5,12 @@ import type {
   RestaurantListParams,
   RestaurantApiResponse,
   RestaurantDetailsApiResponse,
+  RestaurantReviewsParams,
+  RestaurantReviewsResponse,
+  RestaurantReviewResponse,
+  RestaurantReview,
+  RestaurantReviews,
+  MenuItem,
 } from "../types/restaurant";
 
 const api = axios.create({
@@ -30,11 +36,19 @@ const transformRestaurantDetails = (
   data: RestaurantDetailsApiResponse,
 ): RestaurantDetails => ({
   restaurant: transformRestaurant(data.restaurant),
-  dishes: data.dishes,
   labels: data.labels,
   platforms: data.platforms,
   ratingPlatforms: data.rating_platforms,
-  reviews: data.reviews,
+});
+
+const transformReview = (data: RestaurantReviewResponse): RestaurantReview => ({
+  feedback: data.feedback,
+  label: data.label,
+  rating: data.rating,
+  ratingId: data.rating_id,
+  ratingLabel: data.rating_label,
+  reviewTime: data.review_time,
+  username: data.username,
 });
 
 export const restaurantApi = {
@@ -54,17 +68,41 @@ export const restaurantApi = {
   },
 
   search: async (params: {
-    query?: string;
-    district?: string[];
-    page?: number;
+    query: string;
     limit?: number;
-    lat?: number;
-    long?: number;
   }): Promise<Restaurant[]> => {
     const response = await api.get<{ data: RestaurantApiResponse[] }>(
       "/restaurants/search",
       { params },
     );
     return response.data.data.map(transformRestaurant);
+  },
+
+  getRestaurantReviews: async (
+    params: RestaurantReviewsParams,
+  ): Promise<RestaurantReviews> => {
+    const { id, label, page, count } = params;
+    const queryParams = {
+      label,
+      page,
+      ...(count && { count }),
+    };
+
+    const response = await api.get<{ data: RestaurantReviewsResponse }>(
+      `/restaurants/${id}/reviews`,
+      { params: queryParams },
+    );
+
+    return {
+      reviews: response.data.data.reviews.map(transformReview),
+      totalReviews: response.data.data.total_reviews,
+    };
+  },
+
+  getRestaurantMenu: async (id: string): Promise<MenuItem[]> => {
+    const response = await api.get<{ data: MenuItem[] }>(
+      `/restaurants/${id}/menu`,
+    );
+    return response.data.data;
   },
 };

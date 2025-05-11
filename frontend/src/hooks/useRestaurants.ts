@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { restaurantApi } from "../services/restaurantApi";
-import type { RestaurantListParams } from "../types/restaurant";
+import type {
+  RestaurantReviewsParams,
+  RestaurantListParams,
+} from "../types/restaurant";
 
 export const useRestaurants = (params?: RestaurantListParams) => {
   const { data: restaurants = [], isPending } = useQuery({
@@ -15,35 +18,38 @@ export const useRestaurants = (params?: RestaurantListParams) => {
   };
 };
 
-export const useRestaurant = (id: string) => {
-  const { data: restaurant, isPending } = useQuery({
+export const useRestaurant = (
+  id: string,
+  reviewsParams?: Omit<RestaurantReviewsParams, "id">,
+) => {
+  const { data: restaurant, isPending: isRestaurantLoading } = useQuery({
     queryKey: ["restaurants", "detail", id],
     queryFn: () => restaurantApi.getById(id),
     staleTime: 5 * 60 * 1000,
   });
 
-  return {
-    restaurant,
-    isLoading: isPending,
-  };
-};
+  const { data: menu, isPending: isMenuLoading } = useQuery({
+    queryKey: ["restaurantMenu", id],
+    queryFn: () => restaurantApi.getRestaurantMenu(id),
+    staleTime: 5 * 60 * 1000,
+  });
 
-export const useSearchRestaurants = (params: {
-  query?: string;
-  district?: string[];
-  page?: number;
-  limit?: number;
-  lat?: number;
-  lng?: number;
-}) => {
-  const { data: searchResults = [], isPending } = useQuery({
-    queryKey: ["restaurants", "search", params],
-    queryFn: () => restaurantApi.search(params),
+  const { data: reviews, isPending: isReviewsLoading } = useQuery({
+    queryKey: ["restaurantReviews", { id, ...reviewsParams }],
+    queryFn: () =>
+      restaurantApi.getRestaurantReviews({
+        id,
+        ...reviewsParams,
+      } as RestaurantReviewsParams),
+    enabled: !!reviewsParams?.label && !!reviewsParams?.page,
     staleTime: 5 * 60 * 1000,
   });
 
   return {
-    searchResults,
-    isLoading: isPending,
+    restaurant,
+    menu,
+    reviews,
+    isReviewsLoading,
+    isLoading: isRestaurantLoading || isMenuLoading,
   };
 };
