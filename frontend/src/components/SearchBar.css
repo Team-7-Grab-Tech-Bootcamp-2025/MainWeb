@@ -2,7 +2,7 @@
 
 @layer components {
   .search-bar-container {
-    @apply relative;
+    @apply relative w-full;
   }
 
   .search-bar-clear {
@@ -15,5 +15,17 @@
 
   .search-bar-clear-hidden {
     @apply invisible;
+  }
+
+  .search-bar {
+    @apply w-full;
+  }
+
+  .search-bar :global(.ant-input-wrapper) {
+    @apply w-full;
+  }
+
+  .search-bar :global(.ant-input) {
+    @apply flex-1;
   }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, Typography, Flex, Progress, Rate, Row, Col } from "antd";
+import { Card, Flex, Progress, Typography, Rate, Row, Col } from "antd";
 import type { RatingCategory } from "../constants/categoryConstants";
 import {
   CATEGORY_COLORS,
@@ -7,8 +7,9 @@ import {
   CATEGORY_NAMES,
 } from "../constants/categoryConstants";
 import "./RestaurantRatingHighlight.css";
+import type { RestaurantReviewLabel } from "../types/restaurant";
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 interface CategoryRatings {
   food: number;
@@ -20,10 +21,16 @@ interface CategoryRatings {
 
 interface RestaurantRatingHighlightProps {
   categoryRatings: CategoryRatings;
+  averageRating: number;
+  onLabelClick: (label: RestaurantReviewLabel) => void;
+  selectedLabel: RestaurantReviewLabel;
 }
 
 const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
   categoryRatings,
+  averageRating,
+  onLabelClick,
+  selectedLabel,
 }) => {
   const [animated, setAnimated] = useState(false);
 
@@ -35,14 +42,11 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  const averageRating =
-    Object.values(categoryRatings).reduce((sum, rating) => sum + rating, 0) /
-    Object.values(categoryRatings).length;
-
   const categories = Object.keys(CATEGORY_NAMES).map((key) => {
     const categoryKey = key as RatingCategory;
     return {
       name: CATEGORY_NAMES[categoryKey],
+      key: categoryKey.toLowerCase() as RestaurantReviewLabel,
       rating: categoryRatings[categoryKey],
       icon: CATEGORY_ICONS[categoryKey],
       color: CATEGORY_COLORS[categoryKey],
@@ -58,15 +62,18 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
       {/* Average Rating Header */}
       <div className="rating-header">
         <Title level={2} className="text-white">
-          Restaurant Ratings
+          Điểm đánh giá chung
         </Title>
 
-        <Flex vertical align="center" className="mb-4">
-          <Flex className="rating-average" align="center" justify="center">
-            <Title level={1} className="rating-average-text">
-              {averageRating.toFixed(1)}
-            </Title>
-          </Flex>
+        <Flex vertical align="center">
+          <div className="relative">
+            <div className="rating-average-background"></div>
+            <Flex className="rating-average" align="center" justify="center">
+              <Title level={1} className="rating-average-text">
+                {averageRating.toFixed(1)}
+              </Title>
+            </Flex>
+          </div>
           <Rate
             allowHalf
             disabled
@@ -74,7 +81,6 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
             className="my-2"
             style={{ color: "#112d4e" }}
           />
-          <Text type="secondary">Overall rating across all categories</Text>
         </Flex>
       </div>
 
@@ -85,7 +91,7 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
             xs={{ flex: "100%" }}
             md={{ flex: "50%" }}
             xl={{ flex: "20%" }}
-            key={category.name}
+            key={category.key}
             style={{
               transition: "all 0.5s ease",
               opacity: animated ? 1 : 0,
@@ -95,9 +101,10 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
           >
             <Card
               variant="borderless"
-              className="rating-category-card"
+              className={`rating-category-card ${category.key === selectedLabel ? "rating-category-selected" : ""}`}
               styles={{ body: { padding: "16px" } }}
               hoverable
+              onClick={() => onLabelClick(category.key)}
             >
               <Flex vertical align="center" justify="center" gap={0}>
                 <Flex

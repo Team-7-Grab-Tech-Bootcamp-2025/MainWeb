@@ -18,7 +18,7 @@ const CuisineCard: React.FC<CuisineCardProps> = ({ name, index }) => {
   }, [index]);
 
   return (
-    <NavLink to={`/cuisine/${name.toLowerCase()}`}>
+    <NavLink to={`/cuisine/${encodeURIComponent(name)}`}>
       <div className="cuisine-card">
         <div
           className="cuisine-card-container"
@@ -30,7 +30,7 @@ const CuisineCard: React.FC<CuisineCardProps> = ({ name, index }) => {
             <Title
               level={3}
               className="cuisine-card-title"
-              ellipsis={{ rows: 1 }}
+              ellipsis={{ rows: 1, tooltip: true }}
             >
               {name}
             </Title>

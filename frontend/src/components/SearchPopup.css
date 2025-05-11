@@ -2,15 +2,35 @@
 
 @layer components {
   .search-popup {
-    @apply absolute top-full right-0 left-0 z-10 mt-1 max-h-[300px] overflow-y-auto opacity-90 shadow-lg;
+    @apply absolute top-full right-0 left-0 z-10 mt-1 opacity-90 shadow-lg;
   }
 
   .search-popup-item {
-    @apply cursor-pointer px-4 py-2 transition-colors duration-200 hover:bg-gray-50;
+    @apply cursor-pointer px-4 py-3 shadow-none transition-colors duration-200 hover:bg-gray-50;
   }
 
   .search-popup-item-name {
-    @apply text-start text-sm font-semibold;
+    @apply mb-1 text-start text-sm font-semibold;
+  }
+
+  .search-popup-item-address {
+    @apply mb-1 line-clamp-1 text-start text-xs text-gray-600;
+  }
+
+  .search-popup-item-image {
+    @apply h-16 w-16 flex-shrink-0 overflow-hidden rounded-md;
+  }
+
+  .search-popup-item-image img {
+    @apply h-full w-full object-cover;
+  }
+
+  .search-popup-item-content {
+    @apply flex min-w-0 flex-1 flex-col justify-between py-0.5;
+  }
+
+  .search-popup-item-ratings {
+    @apply flex items-center gap-2;
   }
 
   .search-popup-no-results {

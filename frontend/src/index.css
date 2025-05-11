@@ -52,7 +52,6 @@
   }
 }
 
-/* Animation keyframes */
 @keyframes expandCard {
   0% {
     opacity: 0;

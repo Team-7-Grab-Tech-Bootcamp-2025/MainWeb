@@ -48,7 +48,7 @@ export default function RestaurantList({
                   name={restaurant.name}
                   rating={restaurant.rating}
                   reviewCount={restaurant.reviewCount}
-                  categories={[restaurant.districtId, restaurant.cityId]}
+                  categories={[restaurant.foodTypeName]}
                   distance={restaurant.distance}
                   address={restaurant.address}
                 />

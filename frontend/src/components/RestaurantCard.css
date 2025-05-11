@@ -93,10 +93,6 @@
     @apply text-lg font-bold text-[#a3b18a];
   }
 
-  .restaurant-card-expanded-categories-label {
-    @apply mb-2 block font-semibold;
-  }
-
   .restaurant-card-expanded-categories-list {
     @apply mb-2;
   }
