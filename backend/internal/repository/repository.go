@@ -6,6 +6,7 @@ import (
 	"math"
 	"skeleton-internship-backend/internal/model"
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -20,6 +21,7 @@ type Repository interface {
 	FindPlatformsAndRatingsByRestaurantID(id string) ([]string, []float64, error)
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 	FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error)
+	FindRestaurantsByNamePrefix(searchWords []string, limit int) ([]model.Restaurant, error)
 }
 
 type repository struct {
@@ -337,8 +339,7 @@ func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, 
 			AND fl.label = ?
 		ORDER BY 
 			r.review_time DESC
-		LIMIT ? OFFSET ?
-	`
+		LIMIT ? OFFSET ?`
 
 	rows, err := r.db.Query(query, id, label, limit, offset)
 	if err != nil {
@@ -388,8 +389,7 @@ func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, 
 				Feedback_label fl ON r.rating_id = fl.rating_id
 			WHERE 
 				r.restaurant_id = ? 
-				AND fl.label = ?
-		`
+				AND fl.label = ?`
 
 		err = r.db.QueryRow(countQuery, id, label).Scan(&totalReviews)
 		if err != nil {
@@ -399,4 +399,82 @@ func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, 
 	}
 
 	return reviews, totalReviews, nil
+}
+
+// FindRestaurantsByNamePrefix returns restaurants that match the given search words for autocomplete
+func (r *repository) FindRestaurantsByNamePrefix(searchWords []string, limit int) ([]model.Restaurant, error) {
+	log.Info().Msgf("Searching for restaurants with search words: %v, limit: %d", searchWords, limit)
+
+	var whereConditions []string
+	var args []interface{}
+
+	// Create WHERE conditions for each word
+	for _, word := range searchWords {
+		whereConditions = append(whereConditions, "restaurant_name LIKE ?")
+		args = append(args, "%"+word+"%")
+	}
+
+	// If no words were provided, return an empty result
+	if len(whereConditions) == 0 {
+		return []model.Restaurant{}, nil
+	}
+
+	// Construct the query with multiple WHERE conditions joined by AND
+	query := `
+	SELECT 
+		restaurant_id, 
+		restaurant_name, 
+		latitude, 
+		longitude, 
+		address, 
+		restaurant_rating, 
+		review_count, 
+		city_id, 
+		district_id, 
+		Food_type.food_type_name,
+		0 AS distance
+	FROM 
+		Restaurant 
+		JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id
+	WHERE 
+		` + strings.Join(whereConditions, " AND ") + `
+	ORDER BY 
+		restaurant_rating DESC
+	LIMIT ?
+	`
+	// Add the limit parameter
+	args = append(args, limit)
+	log.Info().Msgf("Executing query: %s with args: %v", query, args)
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		log.Error().Err(err).Msg("Error executing query to find restaurants by name prefix")
+		return nil, err
+	}
+	defer rows.Close()
+
+	var restaurants []model.Restaurant
+
+	for rows.Next() {
+		var restaurant model.Restaurant
+		if err := rows.Scan(
+			&restaurant.ID,
+			&restaurant.Name,
+			&restaurant.Latitude,
+			&restaurant.Longitude,
+			&restaurant.Address,
+			&restaurant.Rating,
+			&restaurant.ReviewCount,
+			&restaurant.CityID,
+			&restaurant.DistrictID,
+			&restaurant.FoodType,
+			&restaurant.Distance,
+		); err != nil {
+			log.Error().Err(err).Msg("Error scanning restaurant data for autocomplete")
+			return nil, err
+		}
+
+		restaurants = append(restaurants, restaurant)
+	}
+
+	return restaurants, nil
 }

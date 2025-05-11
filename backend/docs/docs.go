@@ -96,7 +96,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "integer",
-                        "default": 10,
+                        "default": 30,
                         "description": "Limit results",
                         "name": "limit",
                         "in": "query"
@@ -128,6 +128,66 @@ const docTemplate = `{
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/restaurants/search": {
+            "get": {
+                "description": "get restaurant name suggestions based on search query",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "restaurants"
+                ],
+                "summary": "Get autocomplete suggestions for restaurants",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "query",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Limit results",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Restaurant"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
@@ -289,7 +349,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Label type (Ambience, Delivery, Food, Price, Service)",
+                        "description": "Label type (ambience, delivery, food, price, service)",
                         "name": "label",
                         "in": "query",
                         "required": true
@@ -299,7 +359,8 @@ const docTemplate = `{
                         "default": 1,
                         "description": "Page number",
                         "name": "page",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "boolean",
@@ -355,7 +416,7 @@ const docTemplate = `{
                 "tags": [
                     "health"
                 ],
-                "summary": "Show the status of server. HELLO NONO",
+                "summary": "Show the status of server.",
                 "responses": {
                     "200": {
                         "description": "OK",

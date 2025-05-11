@@ -15,6 +15,7 @@ type Service interface {
 	GetRestaurantDetail(id string, lat float64, lng float64) (*model.RestaurantDetail, error)
 	GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 	GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool) (*model.ReviewResponse, error)
+	GetRestaurantsByAutocomplete(searchWords []string, limit int) ([]model.Restaurant, error)
 }
 
 type service struct {
@@ -151,4 +152,18 @@ func (s *service) GetRestaurantReviewsByLabel(id string, label string, page int,
 		Reviews:      reviews,
 		TotalReviews: totalReviews,
 	}, nil
+}
+
+// GetRestaurantsByAutocomplete handles restaurant name autocomplete functionality
+func (s *service) GetRestaurantsByAutocomplete(searchWords []string, limit int) ([]model.Restaurant, error) {
+	log.Info().Msgf("Autocompleting restaurants with search words: %v, limit: %d", searchWords, limit)
+
+	// Get restaurants from repository using the provided words
+	restaurants, err := s.repo.FindRestaurantsByNamePrefix(searchWords, limit)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to fetch restaurants for autocomplete")
+		return nil, err
+	}
+
+	return restaurants, nil
 }

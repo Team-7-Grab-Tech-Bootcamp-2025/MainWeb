@@ -3,6 +3,7 @@ package controller
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"skeleton-internship-backend/internal/model"
 	"skeleton-internship-backend/internal/service"
@@ -29,16 +30,17 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 		restaurants := v1.Group("/restaurants")
 		{
 			restaurants.GET("/:id", c.GetRestaurantDetailByID)
-			restaurants.GET("", c.GetNearbyRestaurants)
-			restaurants.GET("/:id/reviews", c.GetRestaurantReviewsByLabel)
+			restaurants.GET("/search", c.AutocompleteRestaurants)
 			restaurants.GET("/:id/menu", c.GetRestaurantMenuByID)
+			restaurants.GET("/:id/reviews", c.GetRestaurantReviewsByLabel)
 		}
-		v1.GET("foodtypes", c.GetAllFoodTypes)
+		v1.GET("/restaurants", c.GetNearbyRestaurants)
+		v1.GET("/foodtypes", c.GetAllFoodTypes)
 	}
 }
 
 // HealthCheck godoc
-// @Summary Show the status of server. HELLO NONO
+// @Summary Show the status of server.
 // @Description get the status of server.
 // @Tags health
 // @Accept */*
@@ -135,7 +137,7 @@ func (c *Controller) GetAllFoodTypes(ctx *gin.Context) {
 // @Produce json
 // @Param lat query number false "Latitude" (optional)
 // @Param lng query number false "Longitude" (optional)
-// @Param limit query int false "Limit results" default(10)
+// @Param limit query int false "Limit results" default(30)
 // @Success 200 {object} model.Response{data=[]model.Restaurant}
 // @Failure 400 {object} model.Response
 // @Failure 500 {object} model.Response
@@ -149,7 +151,7 @@ func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
 	// Get query parameters
 	latStr := ctx.Query("lat")
 	lngStr := ctx.Query("lng")
-	limitStr := ctx.DefaultQuery("limit", "10")
+	limitStr := ctx.DefaultQuery("limit", "30")
 
 	// Parse lat/lng if provided, otherwise use 0 (which will sort by rating only)
 	if latStr != "" {
@@ -199,8 +201,8 @@ func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "Restaurant ID"
-// @Param label query string true "Label type (Ambience, Delivery, Food, Price, Service)"
-// @Param page query int false "Page number" default(1)
+// @Param label query string true "Label type (ambience, delivery, food, price, service)"
+// @Param page query int true "Page number" default(1)
 // @Param count query boolean false "Whether to count total reviews" default(true)
 // @Success 200 {object} model.Response{data=model.ReviewResponse}
 // @Failure 400 {object} model.Response
@@ -282,4 +284,46 @@ func (c *Controller) GetRestaurantMenuByID(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant menu fetched successfully", menu))
+}
+
+// AutocompleteRestaurants godoc
+// @Summary Get autocomplete suggestions for restaurants
+// @Description get restaurant name suggestions based on search query
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Param query query string true "Search query"
+// @Param limit query int false "Limit results" default(10)
+// @Success 200 {object} model.Response{data=[]model.Restaurant}
+// @Failure 500 {object} model.Response
+// @Router /api/v1/restaurants/search [get]
+func (c *Controller) AutocompleteRestaurants(ctx *gin.Context) {
+	log.Info().Msg("Fetching restaurant autocomplete suggestions")
+
+	// Get query parameters
+	query := ctx.Query("query")
+	if query == "" {
+		ctx.JSON(http.StatusBadRequest, model.NewResponse("Search query is required", nil))
+		return
+	}
+
+	limitStr := ctx.DefaultQuery("limit", "10")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 10 // Default limit
+	}
+
+	// Parse the query parameter into words, handling URL encoding (+ characters)
+	query = strings.Replace(query, "+", " ", -1)
+	searchWords := strings.Fields(query)
+
+	// Get autocomplete results from service with the parsed words
+	restaurants, err := c.service.GetRestaurantsByAutocomplete(searchWords, limit)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get restaurant autocomplete suggestions")
+		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to get restaurant suggestions", nil))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant suggestions fetched successfully", restaurants))
 }
