@@ -10,8 +10,6 @@ import (
 
 	"skeleton-internship-backend/internal/constant"
 
-	"skeleton-internship-backend/internal/constant"
-
 	"github.com/rs/zerolog/log"
 )
 
