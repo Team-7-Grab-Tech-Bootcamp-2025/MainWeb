@@ -1,5 +1,5 @@
 export interface Restaurant {
-  id: number;
+  id: string;
   name: string;
   latitude: number;
   longitude: number;
@@ -12,12 +12,6 @@ export interface Restaurant {
   distance: number;
 }
 
-export interface RestaurantReview {
-  rating: number;
-  feedback: string;
-  reviewTime: string;
-}
-
 export interface RestaurantLabel {
   rating: number;
   count: number;
@@ -25,10 +19,6 @@ export interface RestaurantLabel {
 
 export interface RestaurantDetails {
   restaurant: Restaurant;
-  dishes: {
-    name: string;
-    price: number;
-  }[];
   labels: {
     ambience: RestaurantLabel;
     delivery: RestaurantLabel;
@@ -38,7 +28,6 @@ export interface RestaurantDetails {
   };
   platforms: string[] | null;
   ratingPlatforms: number[] | null;
-  reviews: RestaurantReview[];
 }
 
 export interface RestaurantListResponse {
@@ -54,12 +43,12 @@ export interface RestaurantDetailResponse {
 export interface RestaurantListParams {
   lat?: number;
   lng?: number;
+  foodtype?: string;
   limit?: number;
 }
 
-// API Response Types (snake_case)
 export interface RestaurantApiResponse {
-  id: number;
+  id: string;
   name: string;
   latitude: number;
   longitude: number;
@@ -74,10 +63,6 @@ export interface RestaurantApiResponse {
 
 export interface RestaurantDetailsApiResponse {
   restaurant: RestaurantApiResponse;
-  dishes: {
-    name: string;
-    price: number;
-  }[];
   labels: {
     ambience: RestaurantLabel;
     delivery: RestaurantLabel;
@@ -87,5 +72,53 @@ export interface RestaurantDetailsApiResponse {
   };
   platforms: string[] | null;
   rating_platforms: number[] | null;
+}
+
+export type RestaurantReviewLabel =
+  | "ambience"
+  | "delivery"
+  | "food"
+  | "price"
+  | "service";
+
+export interface RestaurantReview {
+  feedback: string;
+  label: string;
+  rating: number;
+  ratingId: string;
+  ratingLabel: number;
+  reviewTime: string;
+  username: string;
+}
+
+export interface RestaurantReviewResponse {
+  feedback: string;
+  label: string;
+  rating: number;
+  rating_id: string;
+  rating_label: number;
+  review_time: string;
+  username: string;
+}
+
+export interface RestaurantReviews {
   reviews: RestaurantReview[];
+  totalReviews: number;
+}
+
+export interface RestaurantReviewsResponse {
+  reviews: RestaurantReviewResponse[];
+  total_reviews: number;
+}
+
+export interface RestaurantReviewsParams {
+  id: string;
+  label: RestaurantReviewLabel;
+  page: number;
+  count?: number;
+}
+
+export interface MenuItem {
+  name: string;
+  price: number;
 }
