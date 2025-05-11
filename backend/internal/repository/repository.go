@@ -21,6 +21,7 @@ type Repository interface {
 	FindFoodTypesByRestaurantID(id string) ([]string, error)
 	CalculateLabelsRating(id string) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
 	FindPlatformsAndRatingsByRestaurantID(id string) ([]string, []float64, error)
+	FindRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error)
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 	FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error)
 	FindRestaurantsByNamePrefix(searchWords []string, limit int) ([]model.Restaurant, error)
@@ -213,69 +214,104 @@ func (r *repository) FindPlatformsAndRatingsByRestaurantID(id string) ([]string,
 	return platforms, ratings, nil
 }
 
-func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error) {
-	var query string
+func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error) {
+	var queryBuilder strings.Builder
 	var args []interface{}
+	var whereConditions []string
+	var offset int
 
-	// If lat/lng are provided, include distance calculation in the query
+	// Build the base query
+	queryBuilder.WriteString(`
+	SELECT 
+		restaurant_id, 
+		restaurant_name, 
+		latitude, 
+		longitude, 
+		address, 
+		restaurant_rating, 
+		review_count, 
+		city_id, 
+		district_id, 
+		Food_type.food_type_name,
+	`)
+
+	// Add distance calculation if lat/lng are provided
 	if lat != 0 && lng != 0 {
-		// Using Haversine formula directly in SQL to calculate distance
-		query = `
-		SELECT 
-			restaurant_id, 
-			restaurant_name, 
-			latitude, 
-			longitude, 
-			address, 
-			restaurant_rating, 
-			review_count, 
-			city_id, 
-			district_id, 
-			Food_type.food_type_name,
-			(6371 * ACOS(
-				COS(RADIANS(?)) * 
-				COS(RADIANS(latitude)) * 
-				COS(RADIANS(longitude) - RADIANS(?)) + 
-				SIN(RADIANS(?)) * 
-				SIN(RADIANS(latitude))
-			)) AS distance
-		FROM 
-			Restaurant 
-			JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id
-		ORDER BY distance ASC
-		LIMIT ?`
-
-		args = append(args, lat, lng, lat, limit)
+		queryBuilder.WriteString(`
+		(6371 * ACOS(
+			COS(RADIANS(?)) * 
+			COS(RADIANS(latitude)) * 
+			COS(RADIANS(longitude) - RADIANS(?)) + 
+			SIN(RADIANS(?)) * 
+			SIN(RADIANS(latitude))
+		)) AS distance
+		`)
+		args = append(args, lat, lng, lat)
 	} else {
-		// Skip distance calculation when coordinates aren't provided
-		query = `
-		SELECT 
-			restaurant_id, 
-			restaurant_name, 
-			latitude, 
-			longitude, 
-			address, 
-			restaurant_rating, 
-			review_count, 
-			city_id, 
-			district_id, 
-			Food_type.food_type_name,
-			0 AS distance
-		FROM 
-			Restaurant 
-			JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id
-		ORDER BY restaurant_rating DESC
-		LIMIT ?`
+		queryBuilder.WriteString(`0 AS distance`)
+	}
 
+	queryBuilder.WriteString(`
+	FROM 
+		Restaurant 
+		JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id
+	`)
+
+	// Add filter conditions
+	// Filter by food type
+	if foodType != "" {
+		whereConditions = append(whereConditions, `Food_type.food_type_name = ?`)
+		args = append(args, foodType)
+	}
+
+	// Filter by city
+	if cityID != "" {
+		whereConditions = append(whereConditions, `city_id = ?`)
+		args = append(args, cityID)
+	}
+
+	// Filter by district
+	if districtID != "" {
+		whereConditions = append(whereConditions, `district_id = ?`)
+		args = append(args, districtID)
+	}
+
+	// Add WHERE clause if we have conditions
+	if len(whereConditions) > 0 {
+		queryBuilder.WriteString(` WHERE ` + strings.Join(whereConditions, " AND "))
+	}
+
+	// Add ORDER BY clause
+	if lat != 0 && lng != 0 {
+		queryBuilder.WriteString(` ORDER BY distance ASC`)
+	} else {
+		queryBuilder.WriteString(` ORDER BY restaurant_rating DESC`)
+	}
+
+	// Handle pagination
+	if page > 0 {
+		// Use page-based pagination
+		offset = (page - 1) * constant.NumberofRestaurantsperPage
+		limit = constant.NumberofRestaurantsperPage
+		queryBuilder.WriteString(` LIMIT ? OFFSET ?`)
+		args = append(args, limit, offset)
+	} else if limit > 0 {
+		// Use limit-only pagination
+		queryBuilder.WriteString(` LIMIT ?`)
 		args = append(args, limit)
 	}
 
-	log.Info().Msgf("Finding restaurants with lat: %f, lng: %f, limit: %d", lat, lng, limit)
+	query := queryBuilder.String()
 
+	// Log the query for debugging
+	log.Info().Msgf("Finding restaurants with filters - lat: %f, lng: %f, foodType: %s, cityID: %s, districtID: %s, page: %d, limit: %d, isCount: %v",
+		lat, lng, foodType, cityID, districtID, page, limit, isCount)
+
+	// Execute the query
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
-		log.Error().Err(err).Msg("Error executing query to find nearby restaurants")
-		return nil, err
+		log.Error().Err(err).Msg("Error executing query to find restaurants by filter")
+		return nil, 0, err
 	}
 	defer rows.Close()
 
@@ -298,19 +334,52 @@ func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model
 			&restaurant.Distance,
 		); err != nil {
 			log.Error().Err(err).Msg("Error scanning restaurant data")
-			return nil, err
+			return nil, 0, err
 		}
 
 		restaurants = append(restaurants, restaurant)
 	}
 
-	if lat != 0 || lng != 0 {
-		sort.SliceStable(restaurants, func(i, j int) bool {
-			return restaurants[i].Rating > restaurants[j].Rating
-		})
+	// Sort by rating (descending) after getting data from DB
+	sort.SliceStable(restaurants, func(i, j int) bool {
+		return restaurants[i].Rating > restaurants[j].Rating
+	})
+
+	totalCount := 0
+	if isCount {
+		// Build count query reusing the same conditions
+		var countQueryBuilder strings.Builder
+		countQueryBuilder.WriteString(`
+			SELECT COUNT(*) 
+			FROM Restaurant 
+			JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id
+		`)
+
+		// Reuse the same WHERE conditions
+		if len(whereConditions) > 0 {
+			countQueryBuilder.WriteString(` WHERE ` + strings.Join(whereConditions, " AND "))
+		}
+
+		// Execute count query without LIMIT/OFFSET
+		countArgs := args[:] // Make a copy without the limit/offset args
+		if page > 0 {
+			countArgs = args[:len(args)-2] // Remove LIMIT and OFFSET args
+		} else if limit > 0 {
+			countArgs = args[:len(args)-1] // Remove just LIMIT arg
+		}
+		if lat != 0 && lng != 0 {
+			countArgs = countArgs[3:] // Remove lat, lng, and lat args
+		}
+		log.Info().Msgf("Executing count query: %s with args: %v", countQueryBuilder.String(), countArgs)
+
+		err = r.db.QueryRow(countQueryBuilder.String(), countArgs...).Scan(&totalCount)
+		if err != nil {
+			log.Error().Err(err).Msg("Error executing count query")
+			return restaurants, 0, err
+		}
 	}
 
-	return restaurants, nil
+	return restaurants, totalCount, nil
 }
 
 func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error) {
@@ -479,4 +548,11 @@ func (r *repository) FindRestaurantsByNamePrefix(searchWords []string, limit int
 	}
 
 	return restaurants, nil
+}
+
+// FindNearbyRestaurants is maintained for backward compatibility
+func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error) {
+	// Call the new method with default values for new parameters
+	restaurants, _, err := r.FindRestaurantsByFilter(lat, lng, "", "", "", 0, limit, false)
+	return restaurants, err
 }
