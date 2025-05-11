@@ -6,6 +6,14 @@ export const CATEGORY_NAMES = {
   ambience: "Ambience",
 } as const;
 
+export const CATEGORY_NAMES_VN = {
+  food: "Món ăn",
+  service: "Dịch vụ",
+  delivery: "Giao hàng",
+  price: "Giá cả",
+  ambience: "Không gian",
+} as const;
+
 export const CATEGORY_COLORS = {
   food: "#c99383",
   service: "#a3b18a",
@@ -97,4 +105,6 @@ export const CATEGORY_ICONS = {
   ),
 } as const;
 
-export type RatingCategory = keyof typeof CATEGORY_NAMES;
+export type RatingCategory =
+  | keyof typeof CATEGORY_NAMES
+  | keyof typeof CATEGORY_NAMES_VN;

@@ -122,16 +122,26 @@ export const RESTAURANT_IMAGES = [
 ] as const;
 
 export const getRestaurantImage = (
-  id: number,
+  id: string,
   high: boolean = false,
 ): string => {
+  // Extract number from B_number or F_number format
+  const match = id.match(/[BF]_\d+/);
+  const numericId = match
+    ? parseInt(match[0].split("_")[1], 10)
+    : Math.floor(Math.random() * 120);
+
   if (high) {
-    return `${RESTAURANT_IMAGES[id % RESTAURANT_IMAGES.length]}`;
+    return `${RESTAURANT_IMAGES[numericId % RESTAURANT_IMAGES.length]}`;
   }
-  return `${RESTAURANT_IMAGES[id % RESTAURANT_IMAGES.length]}}&auto=format&fit=crop&w=400&q=80`;
+  return `${RESTAURANT_IMAGES[numericId % RESTAURANT_IMAGES.length]}&auto=format&fit=crop&w=400&q=80`;
 };
 
-export const getImagePlaceholder = (id: number): string => {
-  const hue = (id * 137.5) % 360;
+export const getImagePlaceholder = (id: string): string => {
+  const match = id.match(/[BF]_\d+/);
+  const numericId = match
+    ? parseInt(match[0].split("_")[1], 10)
+    : Math.floor(Math.random() * 120);
+  const hue = (numericId * 137.5) % 360;
   return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300' viewBox='0 0 400 300'%3E%3Crect width='400' height='300' fill='hsl(${hue}, 70%, 90%)'/%3E%3C/svg%3E`;
 };
