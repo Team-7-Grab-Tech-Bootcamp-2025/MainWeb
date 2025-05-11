@@ -173,7 +173,7 @@ func (c *Controller) GetNearbyRestaurants(ctx *gin.Context) {
 	// Parse limit
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil || limit <= 0 {
-		limit = 10 // Default limit
+		limit = 30 // Default limit
 	}
 
 	// Get restaurants, either by distance or just by rating if no coordinates

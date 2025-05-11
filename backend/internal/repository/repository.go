@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"skeleton-internship-backend/internal/constant"
+
 	"github.com/rs/zerolog/log"
 )
 
@@ -314,9 +316,9 @@ func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model
 func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error) {
 	log.Info().Msgf("Finding reviews for restaurant ID: %s with label: %s on page: %d, isCount: %v", id, label, page, isCount)
 
-	// Calculate offset based on page number (24 reviews per page)
-	offset := (page - 1) * 24
-	limit := 24
+	// Calculate offset based on page number (constant reviews per page)
+	offset := (page - 1) * constant.NumberofRestaurantsperPage
+	limit := constant.NumberofRestaurantsperPage
 
 	// Query to get reviews with pagination
 	query := `
