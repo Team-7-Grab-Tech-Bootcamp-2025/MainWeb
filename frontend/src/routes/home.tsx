@@ -7,6 +7,7 @@ import { useCuisines } from "../hooks/useCuisine";
 import { useRestaurants } from "../hooks/useRestaurants";
 import { useLocation } from "../hooks/useLocation";
 import { useMemo } from "react";
+
 const { Title } = Typography;
 
 export default function Home() {
@@ -19,7 +20,6 @@ export default function Home() {
   );
   const navigate = useNavigate();
 
-  // Get first 7 cuisines and calculate remaining count
   const displayedCuisines = cuisines?.slice(0, 5) || [];
   const remainingCount = (cuisines?.length || 0) - displayedCuisines.length;
 
@@ -27,16 +27,13 @@ export default function Home() {
     navigate("/restaurants");
   };
 
-  // Sort restaurants by distance if coordinates are available
   const sortedRestaurants = useMemo(() => {
     if (!restaurants || !coordinates) return restaurants;
 
     return [...restaurants].sort((a, b) => {
-      // If either restaurant doesn't have distance information, put it at the end
       if (a.distance === undefined) return 1;
       if (b.distance === undefined) return -1;
 
-      // Sort by distance (ascending)
       return a.distance - b.distance;
     });
   }, [restaurants, coordinates]);
