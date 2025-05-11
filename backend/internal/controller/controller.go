@@ -93,11 +93,11 @@ func (c *Controller) GetRestaurantDetailByID(ctx *gin.Context) {
 		}
 	}
 
-	// No need to convert ID to integer anymore, just use the string directly
 	id := ctx.Param("id")
 
 	restaurantDetail, err := c.service.GetRestaurantDetail(id, lat, lng)
 	if err != nil {
+		log.Error().Err(err).Msg("Failed to get restaurant detail")
 		if err.Error() == "not found" {
 			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))
 		} else {
@@ -146,7 +146,7 @@ func (c *Controller) GetAllFoodTypes(ctx *gin.Context) {
 // @Param district query string false "District ID" (optional)
 // @Param page query int false "Page number" (optional)
 // @Param limit query int false "Limit results" (optional, default: 30)
-// @Param count query bool false "Return total count" (optional, default: false)
+// @Param count query bool false "Return total count" (optional) default(false)
 // @Success 200 {object} model.Response{data=[]model.Restaurant}
 // @Failure 400 {object} model.Response
 // @Failure 500 {object} model.Response
@@ -249,7 +249,7 @@ func (c *Controller) GetRestaurantsByFilter(ctx *gin.Context) {
 // @Tags restaurants
 // @Accept json
 // @Produce json
-// @Param id path int true "Restaurant ID"
+// @Param id path string true "Restaurant ID"
 // @Param label query string true "Label type (ambience, delivery, food, price, service)"
 // @Param page query int true "Page number" default(1)
 // @Param count query boolean false "Whether to count total reviews" default(true)
@@ -269,15 +269,15 @@ func (c *Controller) GetRestaurantReviewsByLabel(ctx *gin.Context) {
 
 	// Validate label values
 	validLabels := map[string]bool{
-		"Ambience": true,
-		"Delivery": true,
-		"Food":     true,
-		"Price":    true,
-		"Service":  true,
+		"ambience": true,
+		"delivery": true,
+		"food":     true,
+		"price":    true,
+		"service":  true,
 	}
 
 	if !validLabels[label] {
-		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid label. Must be one of: Ambience, Delivery, Food, Price, Service", nil))
+		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid label. Must be one of: ambience, delivery, food, price, service", nil))
 		return
 	}
 	// Extract and validate page parameter
@@ -364,6 +364,8 @@ func (c *Controller) AutocompleteRestaurants(ctx *gin.Context) {
 
 	// Parse the query parameter into words, handling URL encoding (+ characters)
 	query = strings.Replace(query, "+", " ", -1)
+	query = strings.Replace(query, "%2B", "+", -1)
+	log.Info().Msgf("Parsed query: %s", query)
 	searchWords := strings.Fields(query)
 
 	// Get autocomplete results from service with the parsed words

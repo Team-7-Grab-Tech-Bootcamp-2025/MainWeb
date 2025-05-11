@@ -24,7 +24,7 @@ type Repository interface {
 	FindRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error)
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 	FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error)
-	FindRestaurantsByNamePrefix(searchWords []string, limit int) ([]model.Restaurant, error)
+	FindRestaurantsByName(searchWords []string, limit int) ([]model.Restaurant, error)
 }
 
 type repository struct {
@@ -35,9 +35,9 @@ func NewRepository(db *sql.DB) Repository {
 	return &repository{db: db}
 }
 
-// Haversine function to calculate distance between two points on the Earth
+// Haversine function to calculate distance (km)
 func haversine(lat1, lon1, lat2, lon2 float64) float64 {
-	const R = 6371 // Radius of the Earth in kilometers
+	const R = 6371 // Radius of the Earth (km)
 
 	lat1Rad := lat1 * math.Pi / 180
 	lat2Rad := lat2 * math.Pi / 180
@@ -54,9 +54,6 @@ func haversine(lat1, lon1, lat2, lon2 float64) float64 {
 func (r *repository) FindRestaurantByID(id string, lat float64, lng float64) (*model.Restaurant, error) {
 	query := "SELECT restaurant_id, restaurant_name, latitude, longitude, address, restaurant_rating, review_count, city_id, district_id, Food_type.food_type_name FROM Restaurant JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id WHERE restaurant_id = ?"
 	row := r.db.QueryRow(query, id)
-
-	log.Info().Msgf("Executing query: %s with id: %s", query, id)
-
 	var restaurant model.Restaurant
 	if err := row.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Latitude, &restaurant.Longitude, &restaurant.Address, &restaurant.Rating, &restaurant.ReviewCount, &restaurant.CityID, &restaurant.DistrictID, &restaurant.FoodType); err != nil {
 		if err == sql.ErrNoRows {
@@ -67,7 +64,6 @@ func (r *repository) FindRestaurantByID(id string, lat float64, lng float64) (*m
 	}
 
 	if lat != 0 && lng != 0 {
-		// Calculate distance using Haversine formula
 		restaurant.Distance = haversine(lat, lng, restaurant.Latitude, restaurant.Longitude)
 	} else {
 		restaurant.Distance = 0
@@ -110,6 +106,9 @@ func (r *repository) FindDishesByRestaurantID(id string) ([]model.Dish, error) {
 	for rows.Next() {
 		var dish model.Dish
 		if err := rows.Scan(&dish.Name, &dish.Price); err != nil {
+			if err == sql.ErrNoRows {
+				return nil, errors.New("not found")
+			}
 			log.Error().Err(err).Msg("Error scanning dish data")
 			return nil, err
 		}
@@ -152,7 +151,6 @@ func (r *repository) CalculateLabelsRating(id string) (float64, int, float64, in
 	}
 	defer rows.Close()
 
-	// Default values
 	var ambienceRating, deliveryRating, foodRating, priceRating, serviceRating float64
 	var ambienceCount, deliveryCount, foodCount, priceCount, serviceCount int
 
@@ -220,7 +218,6 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 	var whereConditions []string
 	var offset int
 
-	// Build the base query
 	queryBuilder.WriteString(`
 	SELECT 
 		restaurant_id, 
@@ -235,7 +232,7 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 		Food_type.food_type_name,
 	`)
 
-	// Add distance calculation if lat/lng are provided
+	// lat and lng handle
 	if lat != 0 && lng != 0 {
 		queryBuilder.WriteString(`
 		(6371 * ACOS(
@@ -257,7 +254,7 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 		JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id
 	`)
 
-	// Add filter conditions
+	// Add WHERE clause conditions
 	// Filter by food type
 	if foodType != "" {
 		whereConditions = append(whereConditions, `Food_type.food_type_name = ?`)
@@ -288,7 +285,7 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 		queryBuilder.WriteString(` ORDER BY restaurant_rating DESC`)
 	}
 
-	// Handle pagination
+	// Handle page and limit
 	if page > 0 {
 		// Use page-based pagination
 		offset = (page - 1) * constant.NumberofRestaurantsperPage
@@ -296,7 +293,7 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 		queryBuilder.WriteString(` LIMIT ? OFFSET ?`)
 		args = append(args, limit, offset)
 	} else if limit > 0 {
-		// Use limit-only pagination
+		// Use limit-only
 		queryBuilder.WriteString(` LIMIT ?`)
 		args = append(args, limit)
 	}
@@ -317,7 +314,6 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 
 	var restaurants []model.Restaurant
 
-	// Scan results from database
 	for rows.Next() {
 		var restaurant model.Restaurant
 		if err := rows.Scan(
@@ -340,14 +336,13 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 		restaurants = append(restaurants, restaurant)
 	}
 
-	// Sort by rating (descending) after getting data from DB
+	// Sort by rating (descending)
 	sort.SliceStable(restaurants, func(i, j int) bool {
 		return restaurants[i].Rating > restaurants[j].Rating
 	})
 
 	totalCount := 0
 	if isCount {
-		// Build count query reusing the same conditions
 		var countQueryBuilder strings.Builder
 		countQueryBuilder.WriteString(`
 			SELECT COUNT(*) 
@@ -355,13 +350,13 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 			JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id
 		`)
 
-		// Reuse the same WHERE conditions
+		// Reuse WHERE conditions
 		if len(whereConditions) > 0 {
 			countQueryBuilder.WriteString(` WHERE ` + strings.Join(whereConditions, " AND "))
 		}
 
-		// Execute count query without LIMIT/OFFSET
-		countArgs := args[:] // Make a copy without the limit/offset args
+		// Execute count query
+		countArgs := args[:] // Make a copy
 		if page > 0 {
 			countArgs = args[:len(args)-2] // Remove LIMIT and OFFSET args
 		} else if limit > 0 {
@@ -448,9 +443,7 @@ func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, 
 
 	var totalReviews int
 
-	// Only execute count query if isCount is true
 	if isCount {
-		// Query to get total count
 		countQuery := `
 			SELECT 
 				COUNT(*)
@@ -472,8 +465,8 @@ func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, 
 	return reviews, totalReviews, nil
 }
 
-// FindRestaurantsByNamePrefix returns restaurants that match the given search words for autocomplete
-func (r *repository) FindRestaurantsByNamePrefix(searchWords []string, limit int) ([]model.Restaurant, error) {
+// FindRestaurantsByName returns restaurants that match the given search words for autocomplete
+func (r *repository) FindRestaurantsByName(searchWords []string, limit int) ([]model.Restaurant, error) {
 	log.Info().Msgf("Searching for restaurants with search words: %v, limit: %d", searchWords, limit)
 
 	var whereConditions []string
@@ -490,7 +483,6 @@ func (r *repository) FindRestaurantsByNamePrefix(searchWords []string, limit int
 		return []model.Restaurant{}, nil
 	}
 
-	// Construct the query with multiple WHERE conditions joined by AND
 	query := `
 	SELECT 
 		restaurant_id, 
@@ -518,7 +510,7 @@ func (r *repository) FindRestaurantsByNamePrefix(searchWords []string, limit int
 	log.Info().Msgf("Executing query: %s with args: %v", query, args)
 	rows, err := r.db.Query(query, args...)
 	if err != nil {
-		log.Error().Err(err).Msg("Error executing query to find restaurants by name prefix")
+		log.Error().Err(err).Msg("Error executing query to find restaurants by name")
 		return nil, err
 	}
 	defer rows.Close()
@@ -550,9 +542,7 @@ func (r *repository) FindRestaurantsByNamePrefix(searchWords []string, limit int
 	return restaurants, nil
 }
 
-// FindNearbyRestaurants is maintained for backward compatibility
 func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error) {
-	// Call the new method with default values for new parameters
 	restaurants, _, err := r.FindRestaurantsByFilter(lat, lng, "", "", "", 0, limit, false)
 	return restaurants, err
 }

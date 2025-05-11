@@ -70,7 +70,7 @@ const docTemplate = `{
         },
         "/api/v1/restaurants": {
             "get": {
-                "description": "get top rated restaurants near specified coordinates",
+                "description": "get restaurants with various filter options including location, food type, city, district, etc. Accepct limit or page (if page is specified, limit will be ignored)\nIf lat and lng are provided, it will return nearby restaurants sorted by distance.\nIf lat and lng are not provided, it will sort by rating only.\nIf count is true, it will return the total count of restaurants matching the filter criteria.\nIf neither page nor limit is specified, it will return the first 30 restaurants.",
                 "consumes": [
                     "application/json"
                 ],
@@ -80,7 +80,7 @@ const docTemplate = `{
                 "tags": [
                     "restaurants"
                 ],
-                "summary": "Get nearby restaurants",
+                "summary": "Get restaurants by filter",
                 "parameters": [
                     {
                         "type": "number",
@@ -95,10 +95,40 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "string",
+                        "description": "Food type",
+                        "name": "foodtype",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "City ID",
+                        "name": "city",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "District ID",
+                        "name": "district",
+                        "in": "query"
+                    },
+                    {
                         "type": "integer",
-                        "default": 30,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
                         "description": "Limit results",
                         "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Return total count",
+                        "name": "count",
                         "in": "query"
                     }
                 ],
@@ -341,7 +371,7 @@ const docTemplate = `{
                 "summary": "Get restaurant reviews by label",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Restaurant ID",
                         "name": "id",
                         "in": "path",
@@ -537,7 +567,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "labels": {
-                    "description": "Ratings for different aspects of the restaurant\nAmbience, delivery, food, price, and service ratings",
+                    "description": "Ratings for different aspects of the restaurant\nambience, delivery, food, price, and service ratings",
                     "allOf": [
                         {
                             "$ref": "#/definitions/model.LabelsRating"

@@ -80,7 +80,7 @@ definitions:
         - $ref: '#/definitions/model.LabelsRating'
         description: |-
           Ratings for different aspects of the restaurant
-          Ambience, delivery, food, price, and service ratings
+          ambience, delivery, food, price, and service ratings
       platforms:
         description: List of platforms where the restaurant is available
         items:
@@ -173,7 +173,12 @@ paths:
     get:
       consumes:
       - application/json
-      description: get top rated restaurants near specified coordinates
+      description: |-
+        get restaurants with various filter options including location, food type, city, district, etc. Accepct limit or page (if page is specified, limit will be ignored)
+        If lat and lng are provided, it will return nearby restaurants sorted by distance.
+        If lat and lng are not provided, it will sort by rating only.
+        If count is true, it will return the total count of restaurants matching the filter criteria.
+        If neither page nor limit is specified, it will return the first 30 restaurants.
       parameters:
       - description: Latitude
         in: query
@@ -183,11 +188,31 @@ paths:
         in: query
         name: lng
         type: number
-      - default: 30
-        description: Limit results
+      - description: Food type
+        in: query
+        name: foodtype
+        type: string
+      - description: City ID
+        in: query
+        name: city
+        type: string
+      - description: District ID
+        in: query
+        name: district
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Limit results
         in: query
         name: limit
         type: integer
+      - default: false
+        description: Return total count
+        in: query
+        name: count
+        type: boolean
       produces:
       - application/json
       responses:
@@ -210,7 +235,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.Response'
-      summary: Get nearby restaurants
+      summary: Get restaurants by filter
       tags:
       - restaurants
   /api/v1/restaurants/{id}:
@@ -301,7 +326,7 @@ paths:
         in: path
         name: id
         required: true
-        type: integer
+        type: string
       - description: Label type (ambience, delivery, food, price, service)
         in: query
         name: label
