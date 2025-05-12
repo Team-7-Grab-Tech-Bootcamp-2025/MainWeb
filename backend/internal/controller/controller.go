@@ -139,6 +139,7 @@ func (c *Controller) GetAllFoodTypes(ctx *gin.Context) {
 // @Description If lat and lng are not provided, it will sort by rating only.
 // @Description If count is true, it will return the total count of restaurants matching the filter criteria.
 // @Description If neither page nor limit is specified, it will return the first 30 restaurants.
+// @Description Multiple districts can be provided as comma-separated values.
 // @Tags restaurants
 // @Accept json
 // @Produce json
@@ -146,7 +147,7 @@ func (c *Controller) GetAllFoodTypes(ctx *gin.Context) {
 // @Param lng query number false "Longitude" (optional)
 // @Param foodtype query string false "Food type" (optional)
 // @Param city query string false "City ID" (optional)
-// @Param district query string false "District ID" (optional)
+// @Param district query string false "District IDs (comma-separated)" (optional)
 // @Param page query int false "Page number" (optional)
 // @Param limit query int false "Limit results" (optional, default: 30)
 // @Param count query bool false "Return total count" (optional) default(false)
@@ -167,7 +168,7 @@ func (c *Controller) GetRestaurantsByFilter(ctx *gin.Context) {
 	lngStr := ctx.Query("lng")
 	foodType := ctx.Query("foodtype")
 	cityID := ctx.Query("city")
-	districtID := ctx.Query("district")
+	districtStr := ctx.Query("district")
 	pageStr := ctx.Query("page")
 	limitStr := ctx.Query("limit")
 	countStr := ctx.DefaultQuery("count", "false")
@@ -214,8 +215,20 @@ func (c *Controller) GetRestaurantsByFilter(ctx *gin.Context) {
 		isCount = false
 	}
 
+	// Handle district IDs
+	var districtIDs []string
+	if districtStr != "" {
+		// Split by comma and filter out empty strings
+		splitDistricts := strings.Split(districtStr, ",")
+		for _, d := range splitDistricts {
+			if d != "" {
+				districtIDs = append(districtIDs, d)
+			}
+		}
+	}
+
 	// Get restaurants with filters
-	restaurants, totalCount, err := c.service.GetRestaurantsByFilter(lat, lng, foodType, cityID, districtID, page, limit, isCount)
+	restaurants, totalCount, err := c.service.GetRestaurantsByFilter(lat, lng, foodType, cityID, districtIDs, page, limit, isCount)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch restaurants", nil))
 		return
