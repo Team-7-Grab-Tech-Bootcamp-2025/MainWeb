@@ -38,8 +38,8 @@ const docTemplate = `{
                 ],
                 "summary": "Export restaurant ratings to CSV",
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -111,8 +111,8 @@ const docTemplate = `{
                 ],
                 "summary": "Recalculate restaurant ratings",
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "202": {
+                        "description": "Accepted",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -455,6 +455,13 @@ const docTemplate = `{
                         "default": true,
                         "description": "Whether to count total reviews",
                         "name": "count",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "If textonly = true, we get text only (ignore null reviews)",
+                        "name": "textonly",
                         "in": "query"
                     }
                 ],

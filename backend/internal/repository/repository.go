@@ -22,7 +22,7 @@ type Repository interface {
 	FindPlatformsAndRatingsByRestaurantID(id string) ([]string, []float64, error)
 	FindRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error)
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
-	FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error)
+	FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool, textOnly bool) ([]model.Review, int, error)
 	FindRestaurantsByName(searchWords []string, limit int) ([]model.Restaurant, error)
 	FindAllRestaurants() ([]string, []float64, []int, error)
 	UpdateRestaurantRating(id string, rating float64, reviewCount int) error

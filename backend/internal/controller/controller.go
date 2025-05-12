@@ -257,6 +257,7 @@ func (c *Controller) GetRestaurantsByFilter(ctx *gin.Context) {
 // @Param label query string true "Label type (ambience, delivery, food, price, service)"
 // @Param page query int true "Page number" default(1)
 // @Param count query boolean false "Whether to count total reviews" default(true)
+// @Param textonly query boolean false "If textonly = true, we get text only (ignore null reviews)" default(false)
 // @Success 200 {object} model.Response{data=model.ReviewResponse}
 // @Failure 400 {object} model.Response
 // @Failure 404 {object} model.Response
@@ -291,13 +292,16 @@ func (c *Controller) GetRestaurantReviewsByLabel(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, model.NewResponse("Invalid page number", nil))
 		return
 	}
-
 	// Check if count parameter is provided
 	countStr := ctx.DefaultQuery("count", "true")
 	isCount := countStr == "true"
 
+	// Check if textonly parameter is provided
+	textOnlyStr := ctx.DefaultQuery("textonly", "false")
+	textOnly := textOnlyStr == "true"
+
 	// Get reviews from service
-	reviewResponse, err := c.service.GetRestaurantReviewsByLabel(id, label, page, isCount)
+	reviewResponse, err := c.service.GetRestaurantReviewsByLabel(id, label, page, isCount, textOnly)
 	if err != nil {
 		if err.Error() == "not found" {
 			ctx.JSON(http.StatusNotFound, model.NewResponse("Restaurant not found", nil))

@@ -14,7 +14,7 @@ type Service interface {
 	GetRestaurantDetail(id string, lat float64, lng float64) (*model.RestaurantDetail, error)
 	GetRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error)
 	GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
-	GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool) (*model.ReviewResponse, error)
+	GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool, textOnly bool) (*model.ReviewResponse, error)
 	GetRestaurantsByAutocomplete(searchWords []string, limit int) ([]model.Restaurant, error)
 	RecalculateRestaurantsRating() error
 	ExportRestaurantsToCSV() error
@@ -36,8 +36,6 @@ func (s *service) GetRestaurantByID(id string, lat float64, lng float64) (*model
 	log.Info().Msgf("Restaurant found: %+v", restaurant)
 	return restaurant, nil
 }
-
-
 
 func (s *service) GetRestaurantDetail(id string, lat float64, lng float64) (*model.RestaurantDetail, error) {
 	restaurant, err := s.GetRestaurantByID(id, lat, lng)
@@ -91,8 +89,8 @@ func (s *service) GetRestaurantsByFilter(lat, lng float64, foodType string, city
 	return restaurants, totalCount, nil
 }
 
-func (s *service) GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool) (*model.ReviewResponse, error) {
-	log.Info().Msgf("Fetching reviews for restaurant ID: %s with label: %s on page: %d, isCount: %v", id, label, page, isCount)
+func (s *service) GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool, textOnly bool) (*model.ReviewResponse, error) {
+	log.Info().Msgf("Fetching reviews for restaurant ID: %s with label: %s on page: %d, isCount: %v, textOnly: %v", id, label, page, isCount, textOnly)
 
 	// Check if restaurant exists
 	_, err := s.GetRestaurantByID(id, 0, 0)
@@ -100,7 +98,7 @@ func (s *service) GetRestaurantReviewsByLabel(id string, label string, page int,
 		return nil, err
 	}
 	// Get reviews from repository
-	reviews, totalReviews, err := s.repo.FindReviewsByRestaurantIDAndLabel(id, label, page, isCount)
+	reviews, totalReviews, err := s.repo.FindReviewsByRestaurantIDAndLabel(id, label, page, isCount, textOnly)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to fetch reviews by restaurant ID and label (service)")
 		return nil, err
@@ -125,5 +123,3 @@ func (s *service) GetRestaurantsByAutocomplete(searchWords []string, limit int) 
 
 	return restaurants, nil
 }
-
-
