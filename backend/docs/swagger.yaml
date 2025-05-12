@@ -143,6 +143,25 @@ info:
   title: Todo List API
   version: "1.0"
 paths:
+  /api/v1/export:
+    post:
+      consumes:
+      - application/json
+      description: Exports restaurant ratings and review counts to a CSV file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: Export restaurant ratings to CSV
+      tags:
+      - restaurants
   /api/v1/foodtypes:
     get:
       consumes:

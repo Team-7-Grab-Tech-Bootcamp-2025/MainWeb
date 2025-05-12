@@ -17,6 +17,7 @@ type Service interface {
 	GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool) (*model.ReviewResponse, error)
 	GetRestaurantsByAutocomplete(searchWords []string, limit int) ([]model.Restaurant, error)
 	RecalculateRestaurantsRating() error
+	ExportRestaurantsToCSV() error
 }
 
 type service struct {
@@ -36,55 +37,7 @@ func (s *service) GetRestaurantByID(id string, lat float64, lng float64) (*model
 	return restaurant, nil
 }
 
-func (s *service) GetAllFoodTypes() ([]string, error) {
-	foodTypes, err := s.repo.FindAllFoodTypes()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get all food types (service)")
-		return nil, err
-	}
-	return foodTypes, nil
-}
-func (s *service) GetDishesByRestaurantID(id string) ([]model.Dish, error) {
-	dishes, err := s.repo.FindDishesByRestaurantID(id)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to get dishes by restaurant ID (service)")
-		return nil, err
-	}
-	return dishes, nil
-}
 
-func (s *service) GetLabelsRating(id string) (*model.LabelsRating, error) {
-	ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, err := s.repo.CalculateLabelsRating(id)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to calculate labels rating (service)")
-		return nil, err
-	}
-
-	labelsRating := &model.LabelsRating{
-		Ambience: model.LabelRating{
-			Rating: ambienceRating,
-			Count:  ambienceCount,
-		},
-		Delivery: model.LabelRating{
-			Rating: deliveryRating,
-			Count:  deliveryCount,
-		},
-		Food: model.LabelRating{
-			Rating: foodRating,
-			Count:  foodCount,
-		},
-		Price: model.LabelRating{
-			Rating: priceRating,
-			Count:  priceCount,
-		},
-		Service: model.LabelRating{
-			Rating: serviceRating,
-			Count:  serviceCount,
-		},
-	}
-
-	return labelsRating, nil
-}
 
 func (s *service) GetRestaurantDetail(id string, lat float64, lng float64) (*model.RestaurantDetail, error) {
 	restaurant, err := s.GetRestaurantByID(id, lat, lng)
@@ -173,19 +126,4 @@ func (s *service) GetRestaurantsByAutocomplete(searchWords []string, limit int) 
 	return restaurants, nil
 }
 
-func (s *service) RecalculateRestaurantsRating() error {
-	log.Info().Msg("Recalculating restaurants rating (service) with parallel processing")
-	err := s.repo.RecalculateCountReviews()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to recalculate count reviews (service)")
-		return err
-	}
 
-	err = s.repo.RecalculateAverageRating()
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to recalculate average rating (service)")
-		return err
-	}
-	log.Info().Msg("Recalculation of restaurant ratings completed successfully (service)")
-	return nil
-}

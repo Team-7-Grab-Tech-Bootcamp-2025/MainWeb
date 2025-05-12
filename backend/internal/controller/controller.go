@@ -37,6 +37,7 @@ func (c *Controller) RegisterRoutes(router *gin.Engine) {
 		v1.GET("/restaurants", c.GetRestaurantsByFilter)
 		v1.GET("/foodtypes", c.GetAllFoodTypes)
 		v1.POST("/recalculate", c.RecalculateRestaurants)
+		v1.POST("/export", c.ExportRestaurantsToCSV)
 	}
 }
 
@@ -399,4 +400,25 @@ func (c *Controller) RecalculateRestaurants(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant ratings recalculated successfully", nil))
+}
+
+// ExportRestaurantsToCSV godoc
+// @Summary Export restaurant ratings to CSV
+// @Description Exports restaurant ratings and review counts to a CSV file
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Success 200 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /api/v1/export [post]
+func (c *Controller) ExportRestaurantsToCSV(ctx *gin.Context) {
+	log.Info().Msg("Exporting restaurant ratings to CSV")
+
+	err := c.service.ExportRestaurantsToCSV()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to export restaurant ratings to CSV", nil))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant ratings exported to CSV successfully", nil))
 }
