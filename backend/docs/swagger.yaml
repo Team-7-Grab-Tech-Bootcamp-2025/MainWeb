@@ -151,8 +151,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted
           schema:
             $ref: '#/definitions/model.Response'
         "500":
@@ -197,8 +197,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "202":
+          description: Accepted
           schema:
             $ref: '#/definitions/model.Response'
         "500":
@@ -381,6 +381,11 @@ paths:
         description: Whether to count total reviews
         in: query
         name: count
+        type: boolean
+      - default: false
+        description: If textonly = true, we get text only (ignore null reviews)
+        in: query
+        name: textonly
         type: boolean
       produces:
       - application/json

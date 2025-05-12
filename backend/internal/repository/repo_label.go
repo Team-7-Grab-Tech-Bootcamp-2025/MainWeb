@@ -72,8 +72,8 @@ func (r *repository) CalculateLabelsRating(id string) (float64, int, float64, in
 	return ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, nil
 }
 
-func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error) {
-	log.Info().Msgf("Finding reviews for restaurant ID: %s with label: %s on page: %d, isCount: %v", id, label, page, isCount)
+func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool, textOnly bool) ([]model.Review, int, error) {
+	log.Info().Msgf("Finding reviews for restaurant ID: %s with label: %s on page: %d, isCount: %v, textOnly: %v", id, label, page, isCount, textOnly)
 
 	// Calculate offset based on page number (constant reviews per page)
 	offset := (page - 1) * constant.NumberofRestaurantsperPage
@@ -97,7 +97,12 @@ func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, 
 			Feedback_label fl ON r.rating_id = fl.rating_id
 		WHERE 
 			r.restaurant_id = ? 
-			AND (fl.label = ? OR fl.label = 'unknown')
+			AND (fl.label = ? OR fl.label = 'unknown')`
+
+	if textOnly {
+		query += ` AND r.feedback IS NOT NULL`
+	}
+	query += `
 		ORDER BY 
 			r.review_time DESC
 		LIMIT ? OFFSET ?`
