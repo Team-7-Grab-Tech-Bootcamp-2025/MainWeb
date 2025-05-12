@@ -6,7 +6,6 @@ import Hero from "../components/Hero";
 import { useCuisines } from "../hooks/useCuisine";
 import { useRestaurants } from "../hooks/useRestaurants";
 import { useLocation } from "../hooks/useLocation";
-import { useMemo } from "react";
 
 const { Title } = Typography;
 
@@ -26,17 +25,6 @@ export default function Home() {
   const handleViewMore = () => {
     navigate("/restaurants");
   };
-
-  const sortedRestaurants = useMemo(() => {
-    if (!restaurants || !coordinates) return restaurants;
-
-    return [...restaurants].sort((a, b) => {
-      if (a.distance === undefined) return 1;
-      if (b.distance === undefined) return -1;
-
-      return a.distance - b.distance;
-    });
-  }, [restaurants, coordinates]);
 
   return (
     <main className="container min-h-screen">
@@ -132,14 +120,14 @@ export default function Home() {
           ) : (
             <>
               <Row gutter={[24, 24]}>
-                {sortedRestaurants.map((restaurant) => (
+                {restaurants.map((restaurant) => (
                   <Col xs={24} sm={12} md={8} lg={6} key={restaurant.id}>
                     <RestaurantCard
                       id={restaurant.id}
                       name={restaurant.name}
                       rating={restaurant.rating}
                       reviewCount={restaurant.reviewCount}
-                      categories={[restaurant.districtId, restaurant.cityId]}
+                      categories={[restaurant.foodTypeName]}
                       distance={restaurant.distance}
                       address={restaurant.address}
                     />
