@@ -63,11 +63,21 @@ func (r *repository) CalculateLabelsRating(id string) (float64, int, float64, in
 		}
 	}
 
-	ambienceRating = float64(ambienceRating) / float64(ambienceCount)
-	deliveryRating = float64(deliveryRating) / float64(deliveryCount)
-	foodRating = float64(foodRating) / float64(foodCount)
-	priceRating = float64(priceRating) / float64(priceCount)
-	serviceRating = float64(serviceRating) / float64(serviceCount)
+	if ambienceCount > 0 {
+		ambienceRating = float64(ambienceRating) / float64(ambienceCount)
+	}
+	if deliveryCount > 0 {
+		deliveryRating = float64(deliveryRating) / float64(deliveryCount)
+	}
+	if foodCount > 0 {
+		foodRating = float64(foodRating) / float64(foodCount)
+	}
+	if priceCount > 0 {
+		priceRating = float64(priceRating) / float64(priceCount)
+	}
+	if serviceCount > 0 {
+		serviceRating = float64(serviceRating) / float64(serviceCount)
+	}
 
 	return ambienceRating, ambienceCount, deliveryRating, deliveryCount, foodRating, foodCount, priceRating, priceCount, serviceRating, serviceCount, nil
 }
