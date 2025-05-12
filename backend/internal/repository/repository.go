@@ -24,8 +24,10 @@ type Repository interface {
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 	FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool) ([]model.Review, int, error)
 	FindRestaurantsByName(searchWords []string, limit int) ([]model.Restaurant, error)
-	FindAllRestaurants() ([]string, error)
+	FindAllRestaurants() ([]string, []float64, []int, error)
 	UpdateRestaurantRating(id string, rating float64, reviewCount int) error
+	RecalculateCountReviews() error
+	RecalculateAverageRating() error
 }
 
 type repository struct {
@@ -265,8 +267,6 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 	return restaurants, totalCount, nil
 }
 
-
-
 func (r *repository) FindRestaurantsByName(searchWords []string, limit int) ([]model.Restaurant, error) {
 	log.Info().Msgf("Searching for restaurants with search words: %v, limit: %d", searchWords, limit)
 
@@ -348,38 +348,32 @@ func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model
 	return restaurants, err
 }
 
-func (r *repository) FindAllRestaurants() ([]string, error) {
-	log.Info().Msg("Finding all restaurants")
+func (r *repository) FindAllRestaurants() ([]string, []float64, []int, error) {
+	log.Info().Msg("Finding all restaurants ID, rating, and review count")
+	query := `SELECT restaurant_id, restaurant_rating, review_count FROM Restaurant`
 
-	query := `SELECT restaurant_id FROM Restaurant LIMIT 1000`
 	rows, err := r.db.Query(query)
 	if err != nil {
 		log.Error().Err(err).Msg("Error executing query to find all restaurants")
-		return nil, err
+		return nil, nil, nil, err
 	}
 	defer rows.Close()
 
 	var restaurantIDs []string
+	var restaurantRatings []float64
+	var reviewCounts []int
 	for rows.Next() {
 		var id string
-		if err := rows.Scan(&id); err != nil {
-			log.Error().Err(err).Msg("Error scanning restaurant ID")
-			return nil, err
+		var rating float64
+		var count int
+		if err := rows.Scan(&id, &rating, &count); err != nil {
+			log.Error().Err(err).Msg("Error scanning restaurant data")
+			return nil, nil, nil, err
 		}
 		restaurantIDs = append(restaurantIDs, id)
+		restaurantRatings = append(restaurantRatings, rating)
+		reviewCounts = append(reviewCounts, count)
 	}
 
-	return restaurantIDs, nil
-}
-
-func (r *repository) UpdateRestaurantRating(id string, rating float64, reviewCount int) error {
-
-	query := `UPDATE Restaurant SET restaurant_rating = ?, review_count = ? WHERE restaurant_id = ?`
-	_, err := r.db.Exec(query, rating, reviewCount, id)
-	if err != nil {
-		log.Error().Err(err).Msgf("Error updating restaurant %s rating", id)
-		return err
-	}
-
-	return nil
+	return restaurantIDs, restaurantRatings, reviewCounts, nil
 }

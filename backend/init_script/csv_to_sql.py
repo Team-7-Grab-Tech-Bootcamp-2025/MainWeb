@@ -77,7 +77,6 @@ def csv_to_sql_inserts(csv_file, table_name, batch_size=100):
             # Process each value appropriately
             processed_values = []
             for i, value in enumerate(row):
-                # Special handling for review_time column in Review table
                 if table_name == 'Review' and i == review_time_index and value.strip():
                     processed_values.append(convert_date_to_timestamp(value.strip()))
                 # Regular processing for other columns
@@ -89,7 +88,11 @@ def csv_to_sql_inserts(csv_file, table_name, batch_size=100):
                     processed_values.append('NULL')  # NULL value
                 else:
                     processed_values.append(escape_sql_string(value))  # String
-                    
+            # if this is table Feedback_label, and the first digit of last value is ''F', add 10227556 to the first value
+            # This is a special case for the Feedback_label table
+            if table_name == 'Feedback_label' and processed_values[-1][1] == 'F':
+                processed_values[0] = str(int(processed_values[0]) + 10227556)
+                # Special handling for review_time column in Review table
             values_list.append(f"({', '.join(processed_values)})")
             row_count += 1
             total_rows += 1
