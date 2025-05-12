@@ -12,7 +12,7 @@ type Service interface {
 	GetAllFoodTypes() ([]string, error)
 	GetDishesByRestaurantID(id string) ([]model.Dish, error)
 	GetRestaurantDetail(id string, lat float64, lng float64) (*model.RestaurantDetail, error)
-	GetRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error)
+	GetRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtIDs []string, page int, limit int, isCount bool) ([]model.Restaurant, int, error)
 	GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 	GetRestaurantReviewsByLabel(id string, label string, page int, isCount bool, textOnly bool) (*model.ReviewResponse, error)
 	GetRestaurantsByAutocomplete(searchWords []string, limit int) ([]model.Restaurant, error)
@@ -76,11 +76,11 @@ func (s *service) GetNearbyRestaurants(lat, lng float64, limit int) ([]model.Res
 	return restaurants, nil
 }
 
-func (s *service) GetRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error) {
-	log.Info().Msgf("Finding restaurants with filters - lat: %f, lng: %f, foodType: %s, cityID: %s, districtID: %s, page: %d, limit: %d, isCount: %v",
-		lat, lng, foodType, cityID, districtID, page, limit, isCount)
+func (s *service) GetRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtIDs []string, page int, limit int, isCount bool) ([]model.Restaurant, int, error) {
+	log.Info().Msgf("Finding restaurants with filters - lat: %f, lng: %f, foodType: %s, cityID: %s, districtIDs: %v, page: %d, limit: %d, isCount: %v",
+		lat, lng, foodType, cityID, districtIDs, page, limit, isCount)
 
-	restaurants, totalCount, err := s.repo.FindRestaurantsByFilter(lat, lng, foodType, cityID, districtID, page, limit, isCount)
+	restaurants, totalCount, err := s.repo.FindRestaurantsByFilter(lat, lng, foodType, cityID, districtIDs, page, limit, isCount)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to find restaurants by filter (service)")
 		return nil, 0, err

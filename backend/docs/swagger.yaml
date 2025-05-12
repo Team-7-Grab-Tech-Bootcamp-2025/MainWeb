@@ -218,6 +218,7 @@ paths:
         If lat and lng are not provided, it will sort by rating only.
         If count is true, it will return the total count of restaurants matching the filter criteria.
         If neither page nor limit is specified, it will return the first 30 restaurants.
+        Multiple districts can be provided as comma-separated values.
       parameters:
       - description: Latitude
         in: query
@@ -235,7 +236,7 @@ paths:
         in: query
         name: city
         type: string
-      - description: District ID
+      - description: District IDs (comma-separated)
         in: query
         name: district
         type: string

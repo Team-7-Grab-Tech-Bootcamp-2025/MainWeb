@@ -128,7 +128,7 @@ const docTemplate = `{
         },
         "/api/v1/restaurants": {
             "get": {
-                "description": "get restaurants with various filter options including location, food type, city, district, etc. Accepct limit or page (if page is specified, limit will be ignored)\nIf lat and lng are provided, it will return nearby restaurants sorted by distance.\nIf lat and lng are not provided, it will sort by rating only.\nIf count is true, it will return the total count of restaurants matching the filter criteria.\nIf neither page nor limit is specified, it will return the first 30 restaurants.",
+                "description": "get restaurants with various filter options including location, food type, city, district, etc. Accepct limit or page (if page is specified, limit will be ignored)\nIf lat and lng are provided, it will return nearby restaurants sorted by distance.\nIf lat and lng are not provided, it will sort by rating only.\nIf count is true, it will return the total count of restaurants matching the filter criteria.\nIf neither page nor limit is specified, it will return the first 30 restaurants.\nMultiple districts can be provided as comma-separated values.",
                 "consumes": [
                     "application/json"
                 ],
@@ -166,7 +166,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "District ID",
+                        "description": "District IDs (comma-separated)",
                         "name": "district",
                         "in": "query"
                     },

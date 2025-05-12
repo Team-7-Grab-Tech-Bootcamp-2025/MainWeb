@@ -20,7 +20,7 @@ type Repository interface {
 	CalculateLabelsRating(id string) (float64, int, float64, int, float64, int, float64, int, float64, int, error)
 	CountReviewsByRestaurantID(id string) (int, error)
 	FindPlatformsAndRatingsByRestaurantID(id string) ([]string, []float64, error)
-	FindRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error)
+	FindRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtIDs []string, page int, limit int, isCount bool) ([]model.Restaurant, int, error)
 	FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error)
 	FindReviewsByRestaurantIDAndLabel(id string, label string, page int, isCount bool, textOnly bool) ([]model.Review, int, error)
 	FindRestaurantsByName(searchWords []string, limit int) ([]model.Restaurant, error)
@@ -108,7 +108,7 @@ func (r *repository) FindPlatformsAndRatingsByRestaurantID(id string) ([]string,
 	return platforms, ratings, nil
 }
 
-func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtID string, page int, limit int, isCount bool) ([]model.Restaurant, int, error) {
+func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, cityID string, districtIDs []string, page int, limit int, isCount bool) ([]model.Restaurant, int, error) {
 	var queryBuilder strings.Builder
 	var args []interface{}
 	var whereConditions []string
@@ -163,10 +163,14 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 		args = append(args, cityID)
 	}
 
-	// Filter by district
-	if districtID != "" {
-		whereConditions = append(whereConditions, `district_id = ?`)
-		args = append(args, districtID)
+	// Filter by districts
+	if len(districtIDs) > 0 {
+		placeholders := make([]string, len(districtIDs))
+		for i := range districtIDs {
+			placeholders[i] = "?"
+			args = append(args, districtIDs[i])
+		}
+		whereConditions = append(whereConditions, `district_id IN (`+strings.Join(placeholders, ",")+`)`)
 	}
 
 	// Add WHERE clause if we have conditions
@@ -197,8 +201,8 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 	query := queryBuilder.String()
 
 	// Log the query for debugging
-	log.Info().Msgf("Finding restaurants with filters - lat: %f, lng: %f, foodType: %s, cityID: %s, districtID: %s, page: %d, limit: %d, isCount: %v",
-		lat, lng, foodType, cityID, districtID, page, limit, isCount)
+	log.Info().Msgf("Finding restaurants with filters - lat: %f, lng: %f, foodType: %s, cityID: %s, districtIDs: %v, page: %d, limit: %d, isCount: %v",
+		lat, lng, foodType, cityID, districtIDs, page, limit, isCount)
 
 	// Execute the query
 	rows, err := r.db.Query(query, args...)
@@ -350,7 +354,7 @@ func (r *repository) FindRestaurantsByName(searchWords []string, limit int) ([]m
 }
 
 func (r *repository) FindNearbyRestaurants(lat, lng float64, limit int) ([]model.Restaurant, error) {
-	restaurants, _, err := r.FindRestaurantsByFilter(lat, lng, "", "", "", 0, limit, false)
+	restaurants, _, err := r.FindRestaurantsByFilter(lat, lng, "", "", []string{}, 0, limit, false)
 	return restaurants, err
 }
 
