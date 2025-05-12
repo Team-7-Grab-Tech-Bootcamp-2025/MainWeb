@@ -110,22 +110,29 @@ func (r *repository) FindReviewsByRestaurantIDAndLabel(id string, label string, 
 	defer rows.Close()
 
 	var reviews []model.Review
-
 	for rows.Next() {
 		var review model.Review
 		var reviewTime sql.NullTime
+		var feedback sql.NullString // Use NullString for feedback which might be NULL
 
 		if err := rows.Scan(
 			&review.RatingID,
 			&review.UserName,
 			&review.Rating,
-			&review.Feedback,
+			&feedback,
 			&reviewTime,
 			&review.Label,
 			&review.RatingLabel,
 		); err != nil {
 			log.Error().Err(err).Msg("Error scanning review data")
 			return nil, 0, err
+		}
+
+		// Handle NULL feedback value
+		if feedback.Valid {
+			review.Feedback = feedback.String
+		} else {
+			review.Feedback = "" // Empty string for NULL feedback
 		}
 
 		// Format the time as ISO string if not null
