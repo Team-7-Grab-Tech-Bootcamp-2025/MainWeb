@@ -387,19 +387,46 @@ func (c *Controller) AutocompleteRestaurants(ctx *gin.Context) {
 // @Tags restaurants
 // @Accept json
 // @Produce json
-// @Success 200 {object} model.Response
+// @Success 202 {object} model.Response
 // @Failure 500 {object} model.Response
 // @Router /api/v1/recalculate [post]
 func (c *Controller) RecalculateRestaurants(ctx *gin.Context) {
-	log.Info().Msg("Recalculating restaurant ratings")
+	log.Info().Msg("Starting recalculation of restaurant ratings in background")
 
-	err := c.service.RecalculateRestaurantsRating()
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to recalculate restaurant ratings", nil))
-		return
-	}
+	go func() {
+		err := c.service.RecalculateRestaurantsRating()
+		if err != nil {
+			log.Error().Err(err).Msg("Background recalculation process failed")
+		} else {
+			log.Info().Msg("Background recalculation process completed successfully")
+		}
+	}()
 
-	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant ratings recalculated successfully", nil))
+	ctx.JSON(http.StatusAccepted, model.NewResponse("Restaurant ratings recalculation started in background", nil))
+}
+
+// ExportRestaurantsToCSV godoc
+// @Summary Export restaurant ratings to CSV
+// @Description Exports restaurant ratings and review counts to a CSV file
+// @Tags restaurants
+// @Accept json
+// @Produce json
+// @Success 202 {object} model.Response
+// @Failure 500 {object} model.Response
+// @Router /api/v1/export [post]
+func (c *Controller) ExportRestaurantsToCSV(ctx *gin.Context) {
+	log.Info().Msg("Starting export of restaurant ratings to CSV in background")
+
+	go func() {
+		err := c.service.ExportRestaurantsToCSV()
+		if err != nil {
+			log.Error().Err(err).Msg("Background export process failed")
+		} else {
+			log.Info().Msg("Background export process completed successfully")
+		}
+	}()
+
+	ctx.JSON(http.StatusAccepted, model.NewResponse("Restaurant ratings export started in background", nil))
 }
 
 // ExportRestaurantsToCSV godoc
