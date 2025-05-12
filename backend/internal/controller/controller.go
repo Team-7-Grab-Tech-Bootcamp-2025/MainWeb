@@ -107,6 +107,7 @@ func (c *Controller) GetRestaurantDetailByID(ctx *gin.Context) {
 		}
 		return
 	}
+	log.Info().Msgf("Fetching successful: Restaurant found with ID: %s", id)
 
 	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant fetched successfully", restaurantDetail))
 }
@@ -127,7 +128,7 @@ func (c *Controller) GetAllFoodTypes(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to fetch food types", nil))
 		return
 	}
-
+	log.Info().Msgf("Fetching successful: Found %d food types", len(foodTypes))
 	ctx.JSON(http.StatusOK, model.NewResponse("Food types fetched successfully", foodTypes))
 }
 
@@ -242,6 +243,7 @@ func (c *Controller) GetRestaurantsByFilter(ctx *gin.Context) {
 		response = restaurants
 	}
 
+	log.Info().Msgf("Fetching successful: Fetched %d restaurants", len(restaurants))
 	ctx.JSON(http.StatusOK, model.NewResponse(message, response))
 }
 
@@ -305,6 +307,8 @@ func (c *Controller) GetRestaurantReviewsByLabel(ctx *gin.Context) {
 		return
 	}
 
+	log.Info().Msgf("Fetching successful: Fetched %d reviews for restaurant ID: %s with label: %s", len(reviewResponse.Reviews), id, label)
+
 	ctx.JSON(http.StatusOK, model.NewResponse("Reviews fetched successfully", reviewResponse))
 }
 
@@ -334,6 +338,7 @@ func (c *Controller) GetRestaurantMenuByID(ctx *gin.Context) {
 		}
 		return
 	}
+	log.Info().Msgf("Fetching successful: Fetched %d dishes for restaurant ID: %s", len(menu), id)
 	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant menu fetched successfully", menu))
 }
 
@@ -377,6 +382,7 @@ func (c *Controller) AutocompleteRestaurants(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, model.NewResponse("Failed to get restaurant suggestions", nil))
 		return
 	}
+	log.Info().Msgf("Fetching successful: Found %d restaurant suggestions", len(restaurants))
 
 	ctx.JSON(http.StatusOK, model.NewResponse("Restaurant suggestions fetched successfully", restaurants))
 }
@@ -425,6 +431,5 @@ func (c *Controller) ExportRestaurantsToCSV(ctx *gin.Context) {
 			log.Info().Msg("Background export process completed successfully")
 		}
 	}()
-
 	ctx.JSON(http.StatusAccepted, model.NewResponse("Restaurant ratings export started in background", nil))
 }

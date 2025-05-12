@@ -38,8 +38,8 @@ CREATE TABLE Food_type (
 CREATE TABLE Restaurant (
     restaurant_id VARCHAR(100) PRIMARY KEY,
     restaurant_name VARCHAR(255) NOT NULL,
-    latitude DECIMAL(10, 6),
-    longitude DECIMAL(10, 6),
+    latitude DECIMAL(16, 12),
+    longitude DECIMAL(16, 12),
     address TEXT,
     restaurant_rating DECIMAL(3, 2),
     review_count INT DEFAULT 0,

@@ -58,12 +58,18 @@ func (r *repository) FindRestaurantByID(id string, lat float64, lng float64) (*m
 	query := "SELECT restaurant_id, restaurant_name, latitude, longitude, address, restaurant_rating, review_count, city_id, district_id, Food_type.food_type_name FROM Restaurant JOIN Food_type ON Restaurant.food_type_id = Food_type.food_type_id WHERE restaurant_id = ?"
 	row := r.db.QueryRow(query, id)
 	var restaurant model.Restaurant
-	if err := row.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Latitude, &restaurant.Longitude, &restaurant.Address, &restaurant.Rating, &restaurant.ReviewCount, &restaurant.CityID, &restaurant.DistrictID, &restaurant.FoodType); err != nil {
+	var address sql.NullString
+	if err := row.Scan(&restaurant.ID, &restaurant.Name, &restaurant.Latitude, &restaurant.Longitude, &address, &restaurant.Rating, &restaurant.ReviewCount, &restaurant.CityID, &restaurant.DistrictID, &restaurant.FoodType); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.New("not found")
 		}
 		log.Error().Err(err).Msg("Error scanning restaurant data")
 		return nil, err
+	}
+	if address.Valid {
+		restaurant.Address = address.String
+	} else {
+		restaurant.Address = "" // Empty string for NULL address
 	}
 
 	if lat != 0 && lng != 0 {
