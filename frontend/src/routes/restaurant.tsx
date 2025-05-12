@@ -60,7 +60,7 @@ export default function Restaurant() {
 
   const handleLabelClick = (label: RestaurantReviewLabel) => {
     setSelectedLabel(label);
-    setCurrentPage(1); // Reset to first page when changing label
+    setCurrentPage(1);
   };
 
   const handlePageChange = (page: number) => {
@@ -311,47 +311,57 @@ export default function Restaurant() {
               {/* Platform Ratings */}
               <Card title="Đánh giá từ các nền tảng" className="shadow-md">
                 <Flex vertical gap={16}>
-                  {restaurant.platforms!.map((platform, index) => {
-                    const rating = restaurant.ratingPlatforms?.[index] || 0;
-                    if (rating === 0) return null;
+                  {(() => {
+                    const seenPlatforms = new Set<string>();
+                    return restaurant.platforms!.map((platform, index) => {
+                      const rating = restaurant.ratingPlatforms?.[index] || 0;
+                      if (rating === 0) return null;
 
-                    return (
-                      <Card
-                        key={index}
-                        hoverable
-                        style={{ backgroundColor: "white" }}
-                      >
-                        <Flex align="center" justify="space-between">
-                          <Flex align="center" gap={8}>
-                            <Avatar
-                              src={
-                                PLATFORM_ICONS[
-                                  platform.toLowerCase() as Platform
-                                ]
-                              }
-                              className="h-9 w-9"
-                            />
-                            <Text strong className="text-base">
-                              {platform}
-                            </Text>
+                      // Skip if we've already seen this platform
+                      if (seenPlatforms.has(platform.toLowerCase()))
+                        return null;
+
+                      // Mark this platform as seen
+                      seenPlatforms.add(platform.toLowerCase());
+
+                      return (
+                        <Card
+                          key={index}
+                          hoverable
+                          style={{ backgroundColor: "white" }}
+                        >
+                          <Flex align="center" justify="space-between">
+                            <Flex align="center" gap={8}>
+                              <Avatar
+                                src={
+                                  PLATFORM_ICONS[
+                                    platform.toLowerCase() as Platform
+                                  ]
+                                }
+                                className="h-9 w-9"
+                              />
+                              <Text strong className="text-base">
+                                {platform}
+                              </Text>
+                            </Flex>
+                            <Flex align="center" gap={8}>
+                              <Title
+                                className="m-0 text-xl font-bold text-[var(--primary-color)]"
+                                level={4}
+                              >
+                                {rating.toFixed(1)}
+                              </Title>
+                              <Rate
+                                disabled
+                                defaultValue={rating}
+                                className="text-base text-[var(--foreground-color)]"
+                              />
+                            </Flex>
                           </Flex>
-                          <Flex align="center" gap={8}>
-                            <Title
-                              className="m-0 text-xl font-bold text-[var(--primary-color)]"
-                              level={4}
-                            >
-                              {rating.toFixed(1)}
-                            </Title>
-                            <Rate
-                              disabled
-                              defaultValue={rating}
-                              className="text-base text-[var(--foreground-color)]"
-                            />
-                          </Flex>
-                        </Flex>
-                      </Card>
-                    );
-                  })}
+                        </Card>
+                      );
+                    });
+                  })()}
                 </Flex>
               </Card>
             </Col>
