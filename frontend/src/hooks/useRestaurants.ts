@@ -21,22 +21,32 @@ export const useRestaurants = (params?: RestaurantListParams) => {
   };
 };
 
-export const useRestaurant = (
-  id: string,
-  reviewsParams?: Omit<RestaurantReviewsParams, "id">,
-) => {
+export const useRestaurant = (id: string) => {
   const { data: restaurant, isPending: isRestaurantLoading } = useQuery({
     queryKey: ["restaurants", "detail", id],
     queryFn: () => restaurantApi.getById(id),
+    enabled: id !== "",
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: menu, isPending: isMenuLoading } = useQuery({
     queryKey: ["restaurantMenu", id],
     queryFn: () => restaurantApi.getRestaurantMenu(id),
+    enabled: id !== "",
     staleTime: 5 * 60 * 1000,
   });
 
+  return {
+    restaurant,
+    menu,
+    isLoading: isRestaurantLoading || isMenuLoading,
+  };
+};
+
+export const useRestaurantReviews = (
+  id: string,
+  reviewsParams?: Omit<RestaurantReviewsParams, "id">,
+) => {
   const { data: reviews, isPending: isReviewsLoading } = useQuery({
     queryKey: ["restaurantReviews", { id, ...reviewsParams }],
     queryFn: () =>
@@ -49,10 +59,8 @@ export const useRestaurant = (
   });
 
   return {
-    restaurant,
-    menu,
-    reviews,
+    reviews: reviews?.reviews || [],
+    totalReviews: reviews?.totalReviews || 0,
     isReviewsLoading,
-    isLoading: isRestaurantLoading || isMenuLoading,
   };
 };
