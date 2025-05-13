@@ -84,7 +84,7 @@ export default function CuisineDetail() {
     <main className="container min-h-screen">
       <div className="space-y-8">
         <Title level={2} className="mb-6">
-          {cuisineId}
+          {cuisineId === "Unknown" ? "Món khác" : cuisineId}
         </Title>
 
         <div className="relative">
