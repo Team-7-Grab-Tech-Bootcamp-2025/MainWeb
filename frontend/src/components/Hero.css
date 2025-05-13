@@ -26,4 +26,8 @@
   .hero-search-bar {
     @apply rounded-lg shadow-xl;
   }
+
+  .hero-chat-button {
+    @apply flex items-center border-none shadow-md;
+  }
 }

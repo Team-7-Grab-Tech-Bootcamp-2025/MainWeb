@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+@layer components {
+  .chat-message {
+    @apply mb-4 w-full;
+  }
+
+  .chat-message-user {
+    @apply flex justify-end;
+  }
+
+  .chat-message-bot {
+    @apply flex justify-start;
+  }
+
+  .chat-bubble {
+    @apply max-w-[80%] rounded-lg p-3;
+  }
+
+  .chat-message-user .chat-bubble {
+    @apply bg-gray-100 text-white;
+  }
+
+  .chat-message-bot .chat-bubble {
+    @apply bg-gray-100;
+  }
+
+  .chat-content {
+    @apply m-0 break-words;
+  }
+
+  .chat-timestamp {
+    @apply mt-1 block text-right text-xs opacity-70;
+  }
+}
