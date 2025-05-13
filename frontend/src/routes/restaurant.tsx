@@ -14,6 +14,7 @@ import {
   List,
   Avatar,
   Pagination,
+  Switch,
 } from "antd";
 import { EnvironmentOutlined, StarFilled } from "@ant-design/icons";
 import RestaurantRatingHighlight from "../components/RestaurantRatingHighlight";
@@ -21,12 +22,12 @@ import {
   getImagePlaceholder,
   getRestaurantImage,
 } from "../constants/backgroundConstants";
-import { useRestaurant } from "../hooks/useRestaurants";
+import { useRestaurant, useRestaurantReviews } from "../hooks/useRestaurants";
 import { PLATFORM_ICONS, type Platform } from "../constants/platformConstants";
 import {
   CITIES,
-  DISTRICTS,
-  type CityKey,
+  CITY_ID_TO_KEY,
+  DISTRICT_BY_ID,
 } from "../constants/locationConstants";
 import type {
   Restaurant,
@@ -48,11 +49,17 @@ export default function Restaurant() {
   const [selectedLabel, setSelectedLabel] =
     useState<RestaurantReviewLabel>("food");
   const [currentPage, setCurrentPage] = useState(1);
-  const { restaurant, menu, reviews, isLoading, isReviewsLoading } =
-    useRestaurant(restaurantId || "", {
+  const [textOnly, setTextOnly] = useState(false);
+  const [activeTab, setActiveTab] = useState("reviews");
+  const { restaurant, menu, isLoading } = useRestaurant(restaurantId || "");
+  const { reviews, totalReviews, isReviewsLoading } = useRestaurantReviews(
+    restaurantId || "",
+    {
       label: selectedLabel,
       page: currentPage,
-    });
+      textonly: textOnly,
+    },
+  );
 
   const handleGoBack = () => {
     navigate(-1);
@@ -65,6 +72,11 @@ export default function Restaurant() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleTextOnlyChange = (checked: boolean) => {
+    setTextOnly(checked);
+    setCurrentPage(1);
   };
 
   const getRatingLabel = (rating: number) => {
@@ -98,14 +110,14 @@ export default function Restaurant() {
 
   const ratingLabel = getRatingLabel(restaurant.restaurant.rating || 0);
 
-  const cityKey =
-    restaurant.restaurant.cityId === "1" ? "HCM" : ("HN" as CityKey);
-  const district =
-    restaurant.restaurant.districtId && restaurant.restaurant.cityId
-      ? DISTRICTS[cityKey].find(
-          (d) => d.id === restaurant.restaurant.districtId,
-        )
-      : undefined;
+  // Use the optimized city key and district lookup
+  const cityKey = restaurant.restaurant.cityId
+    ? CITY_ID_TO_KEY[restaurant.restaurant.cityId] || "HCM"
+    : "HCM";
+
+  const district = restaurant.restaurant.districtId
+    ? DISTRICT_BY_ID[restaurant.restaurant.districtId]
+    : undefined;
 
   const categoryRatings = {
     food: restaurant.labels.food.rating,
@@ -113,6 +125,14 @@ export default function Restaurant() {
     delivery: restaurant.labels.delivery.rating,
     price: restaurant.labels.price.rating,
     ambience: restaurant.labels.ambience.rating,
+  };
+
+  const categoryRatingCount = {
+    food: restaurant.labels.food.count,
+    service: restaurant.labels.service.count,
+    delivery: restaurant.labels.delivery.count,
+    price: restaurant.labels.price.count,
+    ambience: restaurant.labels.ambience.count,
   };
 
   const hasPlatformRatings =
@@ -151,6 +171,7 @@ export default function Restaurant() {
           <Flex align="center" gap="small" className="mt-2">
             <Rate
               disabled
+              allowHalf
               defaultValue={restaurant.restaurant.rating}
               className="text-base"
             />
@@ -158,12 +179,14 @@ export default function Restaurant() {
               {restaurant.restaurant.rating.toFixed(1)} (
               {restaurant.restaurant.reviewCount} reviews)
             </Text>
-            <Tag color={ratingLabel.color}>
-              <Flex align="center" gap={4}>
-                <StarFilled />
-                <span>{ratingLabel.text}</span>
-              </Flex>
-            </Tag>
+            {restaurant.restaurant.rating > 0 && (
+              <Tag color={ratingLabel.color}>
+                <Flex align="center" gap={4}>
+                  <StarFilled />
+                  <span>{ratingLabel.text}</span>
+                </Flex>
+              </Tag>
+            )}
           </Flex>
           <Flex align="center" gap="small" className="mt-2">
             <EnvironmentOutlined />
@@ -173,8 +196,8 @@ export default function Restaurant() {
             <Tag color="orange" className="m-0">
               {restaurant.restaurant.foodTypeName}
             </Tag>
-            {restaurant.restaurant.cityId && (
-              <Tag className="m-0">{CITIES[cityKey]}</Tag>
+            {restaurant.restaurant.cityId && cityKey !== "ALL" && (
+              <Tag className="m-0">{CITIES[cityKey].name}</Tag>
             )}
             {district && <Tag className="m-0">{district.name}</Tag>}
           </Space>
@@ -183,6 +206,7 @@ export default function Restaurant() {
         {/* Rating Highlight Component */}
         <RestaurantRatingHighlight
           categoryRatings={categoryRatings}
+          categoryRatingCount={categoryRatingCount}
           averageRating={restaurant.restaurant.rating}
           onLabelClick={handleLabelClick}
           selectedLabel={selectedLabel}
@@ -201,6 +225,22 @@ export default function Restaurant() {
               {/* Restaurant Tabs */}
               <Tabs
                 defaultActiveKey="reviews"
+                onChange={setActiveTab}
+                tabBarExtraContent={
+                  activeTab === "reviews"
+                    ? {
+                        right: (
+                          <Space>
+                            <Text>Chỉ hiện đánh giá có nội dung</Text>
+                            <Switch
+                              checked={textOnly}
+                              onChange={handleTextOnlyChange}
+                            />
+                          </Space>
+                        ),
+                      }
+                    : undefined
+                }
                 items={[
                   {
                     key: "reviews",
@@ -234,7 +274,7 @@ export default function Restaurant() {
                           <>
                             <List
                               itemLayout="vertical"
-                              dataSource={reviews?.reviews || []}
+                              dataSource={reviews || []}
                               renderItem={(review: RestaurantReview) => (
                                 <List.Item>
                                   <List.Item.Meta
@@ -248,6 +288,7 @@ export default function Restaurant() {
                                       >
                                         <Rate
                                           disabled
+                                          allowHalf
                                           defaultValue={review.rating}
                                           className="text-sm"
                                         />
@@ -265,11 +306,11 @@ export default function Restaurant() {
                                 </List.Item>
                               )}
                             />
-                            {reviews && reviews.totalReviews > 0 && (
+                            {totalReviews > 0 && (
                               <div className="mt-4 flex justify-center">
                                 <Pagination
                                   current={currentPage}
-                                  total={reviews.totalReviews}
+                                  total={totalReviews}
                                   pageSize={5}
                                   onChange={handlePageChange}
                                   showSizeChanger={false}
@@ -353,6 +394,7 @@ export default function Restaurant() {
                               </Title>
                               <Rate
                                 disabled
+                                allowHalf
                                 defaultValue={rating}
                                 className="text-base text-[var(--foreground-color)]"
                               />

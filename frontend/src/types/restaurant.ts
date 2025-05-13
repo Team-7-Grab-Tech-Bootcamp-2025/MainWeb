@@ -118,6 +118,7 @@ export interface RestaurantReviewsParams {
   label: RestaurantReviewLabel;
   page: number;
   count?: number;
+  textonly?: boolean;
 }
 
 export interface MenuItem {

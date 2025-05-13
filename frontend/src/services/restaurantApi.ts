@@ -92,11 +92,12 @@ export const restaurantApi = {
   getRestaurantReviews: async (
     params: RestaurantReviewsParams,
   ): Promise<RestaurantReviews> => {
-    const { id, label, page, count } = params;
+    const { id, label, page, textonly } = params;
     const queryParams = {
       label,
       page,
-      ...(count && { count }),
+      count: true,
+      ...(textonly && { textonly }),
     };
 
     const response = await api.get<{ data: RestaurantReviewsResponse }>(
