@@ -1,10 +1,11 @@
 export const CITIES = {
-  HCM: "Hồ Chí Minh",
-  HN: "Hà Nội",
+  HCM: { id: "1", name: "Hồ Chí Minh" },
+  HN: { id: "2", name: "Hà Nội" },
 } as const;
 
-export type CityKey = keyof typeof CITIES;
+export type CityKey = "HCM" | "HN" | "ALL";
 
+// Normalize raw district data
 export const DISTRICTS = {
   HCM: [
     { id: "32", name: "Quận 1" },
@@ -64,3 +65,62 @@ export const DISTRICTS = {
     { id: "39", name: "Huyện Thanh Oai" },
   ],
 } as const;
+
+// Pre-compute lookup tables for optimized access
+
+// 1. City ID to City Key mapping
+export const CITY_ID_TO_KEY: Record<string, CityKey> = Object.entries(
+  CITIES,
+).reduce(
+  (acc, [key, city]) => {
+    acc[city.id] = key as CityKey;
+    return acc;
+  },
+  {} as Record<string, CityKey>,
+);
+
+// 2. All districts with city information
+export const ALL_DISTRICTS = [
+  ...DISTRICTS.HCM.map((d) => ({
+    ...d,
+    cityId: "1",
+    cityKey: "HCM" as CityKey,
+  })),
+  ...DISTRICTS.HN.map((d) => ({ ...d, cityId: "2", cityKey: "HN" as CityKey })),
+];
+
+// 3. District lookup by ID for O(1) access
+export const DISTRICT_BY_ID = ALL_DISTRICTS.reduce(
+  (acc, district) => {
+    acc[district.id] = district;
+    return acc;
+  },
+  {} as Record<string, (typeof ALL_DISTRICTS)[0]>,
+);
+
+// 4. Pre-computed city options for UI components
+export const CITY_OPTIONS = [
+  { value: "ALL", label: "Tất cả" },
+  ...Object.entries(CITIES).map(([key, city]) => ({
+    value: key,
+    label: city.name,
+  })),
+];
+
+// 5. Get districts by city ID
+export const getDistrictsByCityId = (cityId: string) => {
+  if (!cityId || cityId === "0") return ALL_DISTRICTS;
+  return ALL_DISTRICTS.filter((d) => d.cityId === cityId);
+};
+
+// 6. Get city key from city ID
+export const getCityKeyFromId = (cityId: string | null): CityKey => {
+  if (!cityId || cityId === "0") return "ALL";
+  return CITY_ID_TO_KEY[cityId] || "ALL";
+};
+
+// 7. Get city ID from city key
+export const getCityIdFromKey = (cityKey: CityKey): string => {
+  if (cityKey === "ALL") return "0";
+  return CITIES[cityKey]?.id || "0";
+};
