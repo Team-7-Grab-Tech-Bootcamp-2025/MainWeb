@@ -152,6 +152,7 @@ func (r *repository) FindRestaurantsByFilter(lat, lng float64, foodType string, 
 
 	// Add WHERE clause conditions
 	// Filter by food type
+	whereConditions = append(whereConditions, `Restaurant.review_count > 10`)
 	if foodType != "" {
 		whereConditions = append(whereConditions, `Food_type.food_type_name = ?`)
 		args = append(args, foodType)
@@ -283,6 +284,7 @@ func (r *repository) FindRestaurantsByName(searchWords []string, limit int) ([]m
 	var whereConditions []string
 	var args []interface{}
 
+	whereConditions = append(whereConditions, "review_count > 10")
 	// Create WHERE conditions for each word
 	for _, word := range searchWords {
 		whereConditions = append(whereConditions, "restaurant_name LIKE ?")
