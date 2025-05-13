@@ -6,14 +6,17 @@ import type {
 } from "../types/restaurant";
 
 export const useRestaurants = (params?: RestaurantListParams) => {
-  const { data: restaurants = [], isPending } = useQuery({
+  const { data = { restaurants: [], totalCount: 0 }, isPending } = useQuery({
     queryKey: ["restaurants", "list", params],
-    queryFn: () => restaurantApi.getAll(params),
+    queryFn: () => {
+      return restaurantApi.getAll(params);
+    },
     staleTime: 5 * 60 * 1000,
   });
 
   return {
-    restaurants,
+    restaurants: data.restaurants,
+    totalCount: data.totalCount,
     isLoading: isPending,
   };
 };

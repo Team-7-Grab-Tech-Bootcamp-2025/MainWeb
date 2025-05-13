@@ -30,7 +30,7 @@ export default function CuisineDetail() {
     resetFilters,
   } = useRestaurantFilters();
 
-  const { restaurants, isLoading } = useRestaurants(
+  const { restaurants, totalCount, isLoading } = useRestaurants(
     coordinates
       ? {
           lat: coordinates.latitude,

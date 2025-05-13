@@ -27,8 +27,7 @@ export default function Restaurants() {
     resetFilters,
   } = useRestaurantFilters();
 
-  // Get restaurants with location if available
-  const { restaurants, isLoading } = useRestaurants(
+  const { restaurants, totalCount, isLoading } = useRestaurants(
     coordinates
       ? {
           lat: coordinates.latitude,
