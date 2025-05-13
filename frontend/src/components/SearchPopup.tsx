@@ -80,7 +80,12 @@ export default function SearchPopup({
                     {restaurant.address}
                   </Text>
                   <div className="search-popup-item-ratings">
-                    <Rate disabled defaultValue={restaurant.rating} count={1} />
+                    <Rate
+                      disabled
+                      defaultValue={restaurant.rating}
+                      count={1}
+                      style={{ fontSize: "14px" }}
+                    />
                     <Text type="secondary" className="text-xs">
                       {restaurant.rating.toFixed(1)}
                     </Text>

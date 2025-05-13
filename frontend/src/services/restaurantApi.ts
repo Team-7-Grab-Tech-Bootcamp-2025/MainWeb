@@ -28,7 +28,8 @@ const transformRestaurant = (data: RestaurantApiResponse): Restaurant => ({
   reviewCount: data.review_count,
   cityId: data.city_id,
   districtId: data.district_id,
-  foodTypeName: data.food_type_name,
+  foodTypeName:
+    data.food_type_name === "Unknown" ? "Món khác" : data.food_type_name,
   distance: data.distance,
 });
 
@@ -52,12 +53,22 @@ const transformReview = (data: RestaurantReviewResponse): RestaurantReview => ({
 });
 
 export const restaurantApi = {
-  getAll: async (params?: RestaurantListParams): Promise<Restaurant[]> => {
-    const response = await api.get<{ data: RestaurantApiResponse[] }>(
-      "/restaurants",
-      { params },
-    );
-    return response.data.data.map(transformRestaurant);
+  getAll: async (
+    params?: RestaurantListParams,
+  ): Promise<{
+    restaurants: Restaurant[];
+    totalCount: number;
+  }> => {
+    const response = await api.get<{
+      data: {
+        restaurants: RestaurantApiResponse[];
+        totalCount: number;
+      };
+    }>("/restaurants", { params: { ...params, count: true } });
+    return {
+      restaurants: response.data.data.restaurants.map(transformRestaurant),
+      totalCount: response.data.data.totalCount,
+    };
   },
 
   getById: async (id: string): Promise<RestaurantDetails> => {

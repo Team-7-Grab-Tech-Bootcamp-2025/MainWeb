@@ -9,7 +9,7 @@ import {
 import "./RestaurantRatingHighlight.css";
 import type { RestaurantReviewLabel } from "../types/restaurant";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 interface CategoryRatings {
   food: number;
@@ -19,8 +19,17 @@ interface CategoryRatings {
   ambience: number;
 }
 
+interface CategoryRatingCount {
+  food: number;
+  service: number;
+  delivery: number;
+  price: number;
+  ambience: number;
+}
+
 interface RestaurantRatingHighlightProps {
   categoryRatings: CategoryRatings;
+  categoryRatingCount: CategoryRatingCount;
   averageRating: number;
   onLabelClick: (label: RestaurantReviewLabel) => void;
   selectedLabel: RestaurantReviewLabel;
@@ -28,6 +37,7 @@ interface RestaurantRatingHighlightProps {
 
 const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
   categoryRatings,
+  categoryRatingCount,
   averageRating,
   onLabelClick,
   selectedLabel,
@@ -48,6 +58,7 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
       name: CATEGORY_NAMES[categoryKey],
       key: categoryKey.toLowerCase() as RestaurantReviewLabel,
       rating: categoryRatings[categoryKey],
+      count: categoryRatingCount[categoryKey],
       icon: CATEGORY_ICONS[categoryKey],
       color: CATEGORY_COLORS[categoryKey],
     };
@@ -140,6 +151,10 @@ const RestaurantRatingHighlight: React.FC<RestaurantRatingHighlightProps> = ({
                   strokeColor={category.color}
                   size="default"
                 />
+
+                <Text type="secondary" className="mt-1">
+                  {category.count.toLocaleString()} đánh giá
+                </Text>
               </Flex>
             </Card>
           </Col>

@@ -1,5 +1,4 @@
 import { Typography } from "antd";
-import { useState } from "react";
 import { useLocation } from "../hooks/useLocation";
 import { useRestaurants } from "../hooks/useRestaurants";
 import { useRestaurantFilters } from "../hooks/useRestaurantFilters";
@@ -27,8 +26,7 @@ export default function Restaurants() {
     resetFilters,
   } = useRestaurantFilters();
 
-  // Get restaurants with location if available
-  const { restaurants, isLoading } = useRestaurants(
+  const { restaurants, totalCount, isLoading } = useRestaurants(
     coordinates
       ? {
           lat: coordinates.latitude,
@@ -42,7 +40,7 @@ export default function Restaurants() {
           district: selectedDistricts.join(","),
           city: cityId || undefined,
         },
-    );
+  );
 
   switch (sortBy) {
     case SORT_OPTIONS.RATING:

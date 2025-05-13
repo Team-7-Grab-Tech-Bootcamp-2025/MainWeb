@@ -107,16 +107,14 @@ export const useSearch = (initialFilters: SearchFilters = {}) => {
   // Check if this is actually a search page with a query parameter
   const urlParams = new URLSearchParams(window.location.search);
   const hasSearchQuery = urlParams.has("q");
+  const searchQuery = urlParams.get("q") || "";
 
-  // Query for search results (only triggered by navigation/URL changes)
+  // Query for search results (only triggered by search query changes)
   const { data: restaurants, isPending } = useQuery({
-    queryKey: ["search", window.location.search],
+    queryKey: ["search", searchQuery],
     queryFn: () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const query = urlParams.get("q") || "";
-
       return restaurantApi.search({
-        query: query,
+        query: searchQuery,
         limit: filters.limit,
       });
     },
