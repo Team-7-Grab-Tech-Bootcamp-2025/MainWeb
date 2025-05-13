@@ -2,11 +2,11 @@
 
 @layer components {
   .search-popup {
-    @apply absolute top-full right-0 left-0 z-10 mt-1 opacity-90 shadow-lg;
+    @apply absolute top-full right-0 left-0 z-10 mt-1 border-none bg-[#e9e6e1]/95 shadow-lg;
   }
 
   .search-popup-item {
-    @apply cursor-pointer px-4 py-3 shadow-none transition-colors duration-200 hover:bg-gray-50;
+    @apply cursor-pointer bg-transparent px-4 py-3 shadow-none transition-colors duration-200 hover:bg-gray-50;
   }
 
   .search-popup-item-name {
@@ -30,7 +30,7 @@
   }
 
   .search-popup-item-ratings {
-    @apply flex items-center gap-2;
+    @apply flex items-baseline gap-2;
   }
 
   .search-popup-no-results {
