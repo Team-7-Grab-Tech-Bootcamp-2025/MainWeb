@@ -47,6 +47,7 @@ export interface RestaurantListParams {
   page?: number;
   city?: string;
   district?: string;
+  limit?: number;
 }
 
 export interface RestaurantApiResponse {
