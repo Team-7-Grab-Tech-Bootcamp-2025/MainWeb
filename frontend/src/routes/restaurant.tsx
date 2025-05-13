@@ -35,7 +35,7 @@ import type {
   MenuItem,
   RestaurantReviewLabel,
 } from "../types/restaurant";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   CATEGORY_NAMES_VN,
   type RatingCategory,
@@ -43,23 +43,41 @@ import {
 
 const { Title, Text, Paragraph } = Typography;
 
+const UI_PAGE_SIZE = 6;
+const API_PAGE_SIZE = 24;
+
 export default function Restaurant() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const navigate = useNavigate();
   const [selectedLabel, setSelectedLabel] =
     useState<RestaurantReviewLabel>("food");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentUiPage, setCurrentUiPage] = useState(1);
   const [textOnly, setTextOnly] = useState(false);
   const [activeTab, setActiveTab] = useState("reviews");
+
+  const currentApiPage = Math.ceil(
+    currentUiPage / (API_PAGE_SIZE / UI_PAGE_SIZE),
+  );
+
   const { restaurant, menu, isLoading } = useRestaurant(restaurantId || "");
   const { reviews, totalReviews, isReviewsLoading } = useRestaurantReviews(
     restaurantId || "",
     {
       label: selectedLabel,
-      page: currentPage,
+      page: currentApiPage,
       textonly: textOnly,
     },
   );
+
+  const displayedReviews = useMemo(() => {
+    if (!reviews) return [];
+
+    const apiPageOffset = (currentUiPage - 1) % (API_PAGE_SIZE / UI_PAGE_SIZE);
+    const startIndex = apiPageOffset * UI_PAGE_SIZE;
+    const endIndex = startIndex + UI_PAGE_SIZE;
+
+    return reviews.slice(startIndex, endIndex);
+  }, [reviews, currentUiPage]);
 
   const handleGoBack = () => {
     navigate(-1);
@@ -67,16 +85,16 @@ export default function Restaurant() {
 
   const handleLabelClick = (label: RestaurantReviewLabel) => {
     setSelectedLabel(label);
-    setCurrentPage(1);
+    setCurrentUiPage(1);
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    setCurrentUiPage(page);
   };
 
   const handleTextOnlyChange = (checked: boolean) => {
     setTextOnly(checked);
-    setCurrentPage(1);
+    setCurrentUiPage(1);
   };
 
   const getRatingLabel = (rating: number) => {
@@ -110,7 +128,6 @@ export default function Restaurant() {
 
   const ratingLabel = getRatingLabel(restaurant.restaurant.rating || 0);
 
-  // Use the optimized city key and district lookup
   const cityKey = restaurant.restaurant.cityId
     ? CITY_ID_TO_KEY[restaurant.restaurant.cityId] || "HCM"
     : "HCM";
@@ -274,7 +291,7 @@ export default function Restaurant() {
                           <>
                             <List
                               itemLayout="vertical"
-                              dataSource={reviews || []}
+                              dataSource={displayedReviews}
                               renderItem={(review: RestaurantReview) => (
                                 <List.Item>
                                   <List.Item.Meta
@@ -309,9 +326,9 @@ export default function Restaurant() {
                             {totalReviews > 0 && (
                               <div className="mt-4 flex justify-center">
                                 <Pagination
-                                  current={currentPage}
+                                  current={currentUiPage}
                                   total={totalReviews}
-                                  pageSize={5}
+                                  pageSize={UI_PAGE_SIZE}
                                   onChange={handlePageChange}
                                   showSizeChanger={false}
                                 />

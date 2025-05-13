@@ -15,6 +15,7 @@ export default function CuisineDetail() {
   const [searchParams, setSearchParams] = useSearchParams();
   const cuisineId =
     (params.cuisineId || "") === "Món khác" ? "Unknown" : params.cuisineId;
+  const cusineDisplay = params.cuisineId;
   const currentPage = Number(searchParams.get("page")) || 1;
 
   const { coordinates } = useLocation();
@@ -84,7 +85,7 @@ export default function CuisineDetail() {
     <main className="container min-h-screen">
       <div className="space-y-8">
         <Title level={2} className="mb-6">
-          {cuisineId === "Unknown" ? "Món khác" : cuisineId}
+          {cusineDisplay}
         </Title>
 
         <div className="relative">
@@ -116,7 +117,7 @@ export default function CuisineDetail() {
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               isLoading={isLoading}
-              emptyMessage={`Không có quán ăn nào có ${cuisineId}`}
+              emptyMessage={`Không có quán ăn nào có ${cusineDisplay}`}
             />
           </div>
         </div>
