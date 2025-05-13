@@ -13,5 +13,6 @@ export default [
     route("search", "./routes/search.tsx"),
     route("restaurants", "./routes/restaurants.tsx"),
     route("restaurant/:restaurantId", "./routes/restaurant.tsx"),
+    route("ask", "./routes/ask.tsx"),
   ]),
 ] satisfies RouteConfig;

@@ -72,6 +72,9 @@ const AppHeader: React.FC = () => {
           <NavLink to="/cuisines" className="nav-link">
             Ẩm thực
           </NavLink>
+          <NavLink to="/ask" className="nav-link">
+            Chatbot
+          </NavLink>
         </Flex>
 
         {/* Animated Search Bar in Header */}

@@ -1,4 +1,6 @@
-import { Typography, Space, Flex } from "antd";
+import { Typography, Space, Flex, Button } from "antd";
+import { CommentOutlined } from "@ant-design/icons";
+import { Link } from "react-router";
 import SearchBar from "./SearchBar";
 import "./Hero.css";
 
@@ -19,9 +21,20 @@ const Hero: React.FC<HeroProps> = ({ title, subtitle }) => {
         <Paragraph className="hero-subtitle">{subtitle}</Paragraph>
 
         {/* Search Bar */}
-        <div id="hero-search" className="hero-search">
+        <Flex id="hero-search" className="hero-search" align="center" gap={12}>
+          {/* Chatbot Button */}
+          <Link to="/ask">
+            <Button
+              type="default"
+              shape="circle"
+              size="large"
+              className="hero-chat-button"
+              icon={<CommentOutlined />}
+            ></Button>
+          </Link>
+
           <SearchBar size="large" className="hero-search-bar" />
-        </div>
+        </Flex>
       </Space>
     </Flex>
   );
