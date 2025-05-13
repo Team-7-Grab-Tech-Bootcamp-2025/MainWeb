@@ -28,7 +28,8 @@ const transformRestaurant = (data: RestaurantApiResponse): Restaurant => ({
   reviewCount: data.review_count,
   cityId: data.city_id,
   districtId: data.district_id,
-  foodTypeName: data.food_type_name,
+  foodTypeName:
+    data.food_type_name === "Unknown" ? "Món khác" : data.food_type_name,
   distance: data.distance,
 });
 
