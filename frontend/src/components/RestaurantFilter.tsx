@@ -13,11 +13,12 @@ import {
   FilterOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import {
-  CITIES,
-  DISTRICTS,
+  CITY_OPTIONS,
+  ALL_DISTRICTS,
   type CityKey,
+  getCityIdFromKey,
 } from "../constants/locationConstants";
 import { SORT_OPTIONS } from "../constants/sortConstants";
 import "./RestaurantFilter.css";
@@ -27,53 +28,79 @@ const { Text } = Typography;
 interface RestaurantFilterProps {
   selectedDistricts: string[];
   sortBy: string;
+  selectedCity: CityKey;
   onDistrictChange: (value: string[]) => void;
   onSortChange: (value: string) => void;
+  onCityChange: (value: CityKey) => void;
   onResetFilters: () => void;
+  hasLocation?: boolean;
 }
 
 export default function RestaurantFilter({
   selectedDistricts,
   sortBy,
+  selectedCity,
   onDistrictChange,
   onSortChange,
+  onCityChange,
   onResetFilters,
+  hasLocation = false,
 }: RestaurantFilterProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [selectedCity, setSelectedCity] = useState<CityKey>("HCM");
   const hasActiveFilters = selectedDistricts.length > 0;
 
-  const availableDistricts = useMemo(
-    () => DISTRICTS[selectedCity],
-    [selectedCity],
+  // Memoize the available districts based on selected city
+  const availableDistricts = useMemo(() => {
+    if (selectedCity === "ALL") {
+      return ALL_DISTRICTS;
+    }
+    const cityId = getCityIdFromKey(selectedCity);
+    return ALL_DISTRICTS.filter((d) => d.cityId === cityId);
+  }, [selectedCity]);
+
+  // Memoize selected districts set for faster lookups
+  const selectedDistrictsSet = useMemo(
+    () => new Set(selectedDistricts),
+    [selectedDistricts],
   );
 
-  const handleDistrictChange = (districtId: string, checked: boolean) => {
-    if (checked) {
-      onDistrictChange([...selectedDistricts, districtId]);
-    } else {
-      onDistrictChange(selectedDistricts.filter((id) => id !== districtId));
-    }
-  };
+  const handleDistrictChange = useCallback(
+    (districtId: string, checked: boolean) => {
+      if (checked) {
+        onDistrictChange([...selectedDistricts, districtId]);
+      } else {
+        onDistrictChange(selectedDistricts.filter((id) => id !== districtId));
+      }
+    },
+    [selectedDistricts, onDistrictChange],
+  );
 
-  const handleSelectAllDistricts = (checked: boolean) => {
-    if (checked) {
-      onDistrictChange(availableDistricts.map((district) => district.id));
-    } else {
-      onDistrictChange([]);
-    }
-  };
+  const handleSelectAllDistricts = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        onDistrictChange(availableDistricts.map((district) => district.id));
+      } else {
+        onDistrictChange([]);
+      }
+    },
+    [availableDistricts, onDistrictChange],
+  );
 
-  const handleCityChange = (cityKey: CityKey) => {
-    setSelectedCity(cityKey);
-    onDistrictChange([]);
-  };
+  const handleCityChange = useCallback(
+    (cityKey: CityKey) => {
+      onCityChange(cityKey);
+    },
+    [onCityChange],
+  );
 
-  const isAllDistrictsSelected =
-    availableDistricts.length > 0 &&
-    availableDistricts.every((district) =>
-      selectedDistricts.includes(district.id),
-    );
+  const isAllDistrictsSelected = useMemo(
+    () =>
+      availableDistricts.length > 0 &&
+      availableDistricts.every((district) =>
+        selectedDistrictsSet.has(district.id),
+      ),
+    [availableDistricts, selectedDistrictsSet],
+  );
 
   return (
     <div className="relative">
@@ -118,10 +145,7 @@ export default function RestaurantFilter({
               value={selectedCity}
               onChange={handleCityChange}
               className="w-full"
-              options={Object.entries(CITIES).map(([key, value]) => ({
-                value: key,
-                label: value,
-              }))}
+              options={CITY_OPTIONS}
             />
           </div>
 
@@ -129,7 +153,10 @@ export default function RestaurantFilter({
             <Text strong className="filter-title">
               Quận
             </Text>
-            <div className="filter-districts-list">
+            <div
+              className="filter-districts-list"
+              style={{ maxHeight: 300, overflow: "auto" }}
+            >
               <div className="filter-district-item">
                 <Checkbox
                   checked={isAllDistrictsSelected}
@@ -141,7 +168,7 @@ export default function RestaurantFilter({
               {availableDistricts.map((district) => (
                 <div key={district.id} className="filter-district-item">
                   <Checkbox
-                    checked={selectedDistricts.includes(district.id)}
+                    checked={selectedDistrictsSet.has(district.id)}
                     onChange={(e) =>
                       handleDistrictChange(district.id, e.target.checked)
                     }
@@ -164,21 +191,23 @@ export default function RestaurantFilter({
               onChange={(e) => onSortChange(e.target.value)}
               className="filter-radio-group"
             >
-              <Radio
-                value={SORT_OPTIONS.RELEVANCE}
-                className="filter-radio-item"
-              >
-                Độ liên quan
-              </Radio>
               <Radio value={SORT_OPTIONS.RATING} className="filter-radio-item">
                 Điểm đánh giá
               </Radio>
               <Radio
-                value={SORT_OPTIONS.DISTANCE}
+                value={SORT_OPTIONS.REVIEW_COUNT}
                 className="filter-radio-item"
               >
-                Khoảng cách
+                Số đánh giá
               </Radio>
+              {hasLocation && (
+                <Radio
+                  value={SORT_OPTIONS.DISTANCE}
+                  className="filter-radio-item"
+                >
+                  Khoảng cách
+                </Radio>
+              )}
             </Radio.Group>
           </div>
 

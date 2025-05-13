@@ -44,7 +44,9 @@ export interface RestaurantListParams {
   lat?: number;
   lng?: number;
   foodtype?: string;
-  limit?: number;
+  page?: number;
+  city?: string;
+  district?: string;
 }
 
 export interface RestaurantApiResponse {
