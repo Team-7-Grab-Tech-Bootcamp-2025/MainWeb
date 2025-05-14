@@ -4,6 +4,9 @@ import "./ChatMessage.css";
 import { useQuery } from "@tanstack/react-query";
 import { restaurantApi } from "../services/restaurantApi";
 import RestaurantCard from "./RestaurantCard";
+import LoadingDot from "./LoadingDot";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const { Paragraph } = Typography;
 
@@ -14,9 +17,9 @@ export interface ChatMessageProps {
   content: string;
   images?: string[];
   restaurantIds?: string[];
+  isLoading?: boolean;
 }
 
-// Component to fetch and display a restaurant card
 const RestaurantSuggestion = ({ id }: { id: string }) => {
   const { data, isLoading } = useQuery({
     queryKey: ["restaurant", id],
@@ -47,6 +50,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   content,
   images = [],
   restaurantIds = [],
+  isLoading = false,
 }) => {
   const hasImages = images && images.length > 0;
   const hasRestaurantIds = restaurantIds && restaurantIds.length > 0;
@@ -56,7 +60,13 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       className={`chat-message ${type === "user" ? "chat-message-user" : "chat-message-bot"}`}
     >
       <div className="chat-bubble">
-        <Paragraph className="chat-content">{content}</Paragraph>
+        {isLoading && type === "bot" ? (
+          <LoadingDot size={6} />
+        ) : (
+          <div className="chat-content">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+          </div>
+        )}
 
         {hasRestaurantIds && (
           <div className="restaurant-suggestions">

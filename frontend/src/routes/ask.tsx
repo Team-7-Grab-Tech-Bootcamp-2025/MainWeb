@@ -19,12 +19,11 @@ export default function AskPage() {
     reset();
   };
 
-  // Scroll to bottom when messages change
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages]);
+  }, [messages, isLoading]);
 
   return (
     <main className="container pb-24">
@@ -36,15 +35,20 @@ export default function AskPage() {
                 {title}
               </Title>
             ) : (
-              messages.map((msg, index) => (
-                <ChatMessage
-                  key={index}
-                  type={msg.type}
-                  content={msg.content}
-                  images={msg.images}
-                  restaurantIds={msg.restaurantIds}
-                />
-              ))
+              <>
+                {messages.map((msg, index) => (
+                  <ChatMessage
+                    key={index}
+                    type={msg.type}
+                    content={msg.content}
+                    images={msg.images}
+                    restaurantIds={msg.restaurantIds}
+                  />
+                ))}
+                {isLoading && (
+                  <ChatMessage type="bot" content="" isLoading={true} />
+                )}
+              </>
             )}
             <div ref={messagesEndRef} />
           </Flex>
