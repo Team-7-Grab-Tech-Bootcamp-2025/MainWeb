@@ -29,6 +29,49 @@
     @apply m-0 text-base break-words;
   }
 
+  /* Markdown styles */
+  .chat-content a {
+    @apply text-[var(--primary-color)] underline hover:opacity-80;
+  }
+
+  .chat-content code {
+    @apply rounded bg-gray-100 px-1 py-0.5 font-mono text-sm;
+  }
+
+  .chat-content pre {
+    @apply my-2 overflow-x-auto rounded bg-gray-800 p-3 text-white;
+  }
+
+  .chat-content pre code {
+    @apply bg-transparent p-0 text-white;
+  }
+
+  .chat-content h1,
+  .chat-content h2,
+  .chat-content h3,
+  .chat-content h4,
+  .chat-content h5,
+  .chat-content h6 {
+    @apply mt-4 mb-2 font-bold;
+  }
+
+  .chat-content ul,
+  .chat-content ol {
+    @apply my-2 pl-5;
+  }
+
+  .chat-content ul {
+    @apply list-disc;
+  }
+
+  .chat-content ol {
+    @apply list-decimal;
+  }
+
+  .chat-content blockquote {
+    @apply my-2 border-l-4 border-gray-300 pl-3 italic;
+  }
+
   .chat-images {
     @apply mt-2;
   }
@@ -39,6 +82,14 @@
 
   .chat-image {
     @apply max-h-[200px] max-w-[200px] object-cover;
+  }
+
+  .restaurant-suggestions {
+    @apply mt-3 mb-3;
+  }
+
+  .restaurant-suggestions-title {
+    @apply mb-2 font-medium text-gray-700;
   }
 
   .restaurant-cards-container {
