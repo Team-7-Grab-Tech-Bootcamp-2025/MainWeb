@@ -130,17 +130,17 @@ definitions:
 host: localhost:8080
 info:
   contact:
-    email: support@example.com
-    name: API Support Team
-    url: http://www.example.com/support
-  description: A modern RESTful API for managing your todos efficiently. This API
-    provides comprehensive endpoints for creating, reading, updating, and deleting
-    todo items.
+    email: support@angi-reviews.com
+    name: ANGI Support Team
+    url: http://www.angi-reviews.com/support
+  description: A comprehensive RESTful API for retrieving restaurant information,
+    reviews, and menu details. The API provides endpoints for filtering restaurants
+    by location, cuisine type, and more.
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   termsOfService: http://swagger.io/terms/
-  title: Todo List API
+  title: Restaurant Review API
   version: "1.0"
 paths:
   /api/v1/export:
@@ -282,7 +282,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: get restaurant by ID
+      description: get restaurant by ID, with optional latitude and longitude for
+        calculating distance
       parameters:
       - description: Restaurant ID
         in: path
@@ -415,7 +416,8 @@ paths:
     get:
       consumes:
       - application/json
-      description: get restaurant name suggestions based on search query
+      description: get restaurant name suggestions based on search query, query in
+        format query=word1+word2+%2B+word3 (%2B is URL encoded +)
       parameters:
       - description: Search query
         in: query
@@ -466,18 +468,14 @@ paths:
 schemes:
 - http
 - https
-securityDefinitions:
-  Bearer:
-    description: 'Enter the token with the `Bearer: ` prefix, e.g. "Bearer abcde12345".'
-    in: header
-    name: Authorization
-    type: apiKey
 swagger: "2.0"
 tags:
-- description: Operations about todos
+- description: Operations related to restaurants including details, reviews, and menus
   externalDocs:
-    description: Detailed information about todo operations
-    url: http://example.com/docs/todos
-  name: todos
+    description: Detailed information about restaurant operations and filtering
+    url: https://angi-reviews.com/docs/restaurants
+  name: restaurants
+- description: Operations related to cuisine types and food categories
+  name: foodtypes
 - description: API health check operations
   name: health

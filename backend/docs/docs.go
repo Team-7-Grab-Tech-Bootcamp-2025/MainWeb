@@ -11,9 +11,9 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
-            "name": "API Support Team",
-            "url": "http://www.example.com/support",
-            "email": "support@example.com"
+            "name": "ANGI Support Team",
+            "url": "http://www.angi-reviews.com/support",
+            "email": "support@angi-reviews.com"
         },
         "license": {
             "name": "MIT",
@@ -229,7 +229,7 @@ const docTemplate = `{
         },
         "/api/v1/restaurants/search": {
             "get": {
-                "description": "get restaurant name suggestions based on search query",
+                "description": "get restaurant name suggestions based on search query, query in format query=word1+word2+%2B+word3 (%2B is URL encoded +)",
                 "consumes": [
                     "application/json"
                 ],
@@ -289,7 +289,7 @@ const docTemplate = `{
         },
         "/api/v1/restaurants/{id}": {
             "get": {
-                "description": "get restaurant by ID",
+                "description": "get restaurant by ID, with optional latitude and longitude for calculating distance",
                 "consumes": [
                     "application/json"
                 ],
@@ -705,22 +705,18 @@ const docTemplate = `{
             }
         }
     },
-    "securityDefinitions": {
-        "Bearer": {
-            "description": "Enter the token with the ` + "`" + `Bearer: ` + "`" + ` prefix, e.g. \"Bearer abcde12345\".",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        }
-    },
     "tags": [
         {
-            "description": "Operations about todos",
-            "name": "todos",
+            "description": "Operations related to restaurants including details, reviews, and menus",
+            "name": "restaurants",
             "externalDocs": {
-                "description": "Detailed information about todo operations",
-                "url": "http://example.com/docs/todos"
+                "description": "Detailed information about restaurant operations and filtering",
+                "url": "https://angi-reviews.com/docs/restaurants"
             }
+        },
+        {
+            "description": "Operations related to cuisine types and food categories",
+            "name": "foodtypes"
         },
         {
             "description": "API health check operations",
@@ -735,8 +731,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{"http", "https"},
-	Title:            "Todo List API",
-	Description:      "A modern RESTful API for managing your todos efficiently. This API provides comprehensive endpoints for creating, reading, updating, and deleting todo items.",
+	Title:            "Restaurant Review API",
+	Description:      "A comprehensive RESTful API for retrieving restaurant information, reviews, and menu details. The API provides endpoints for filtering restaurants by location, cuisine type, and more.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

@@ -56,7 +56,7 @@ func (x *Controller) HealthCheck(ctx *gin.Context) {
 
 // GetRestaurantDetailByID godoc
 // @Summary Get a restaurant
-// @Description get restaurant by ID
+// @Description get restaurant by ID, with optional latitude and longitude for calculating distance
 // @Tags restaurants
 // @Accept json
 // @Produce json
@@ -361,7 +361,7 @@ func (c *Controller) GetRestaurantMenuByID(ctx *gin.Context) {
 
 // AutocompleteRestaurants godoc
 // @Summary Get autocomplete suggestions for restaurants
-// @Description get restaurant name suggestions based on search query
+// @Description get restaurant name suggestions based on search query, query in format query=word1+word2+%2B+word3 (%2B is URL encoded +)
 // @Tags restaurants
 // @Accept json
 // @Produce json

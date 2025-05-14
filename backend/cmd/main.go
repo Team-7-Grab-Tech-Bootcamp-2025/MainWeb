@@ -21,14 +21,14 @@ import (
 	"skeleton-internship-backend/internal/service"
 )
 
-// @title           Todo List API
+// @title           Restaurant Review API
 // @version         1.0
-// @description     A modern RESTful API for managing your todos efficiently. This API provides comprehensive endpoints for creating, reading, updating, and deleting todo items.
+// @description     A comprehensive RESTful API for retrieving restaurant information, reviews, and menu details. The API provides endpoints for filtering restaurants by location, cuisine type, and more.
 // @termsOfService  http://swagger.io/terms/
 
-// @contact.name   API Support Team
-// @contact.url    http://www.example.com/support
-// @contact.email  support@example.com
+// @contact.name   ANGI Support Team
+// @contact.url    http://www.angi-reviews.com/support
+// @contact.email  support@angi-reviews.com
 
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT
@@ -37,18 +37,16 @@ import (
 // @BasePath  /
 // @schemes   http https
 
-// @tag.name         todos
-// @tag.description  Operations about todos
-// @tag.docs.url     http://example.com/docs/todos
-// @tag.docs.description Detailed information about todo operations
+// @tag.name         restaurants
+// @tag.description  Operations related to restaurants including details, reviews, and menus
+// @tag.docs.url     https://angi-reviews.com/docs/restaurants
+// @tag.docs.description Detailed information about restaurant operations and filtering
+
+// @tag.name         foodtypes
+// @tag.description  Operations related to cuisine types and food categories
 
 // @tag.name         health
 // @tag.description  API health check operations
-
-// @securityDefinitions.apikey Bearer
-// @in header
-// @name Authorization
-// @description Enter the token with the `Bearer: ` prefix, e.g. "Bearer abcde12345".
 
 func main() {
 	app := fx.New(
