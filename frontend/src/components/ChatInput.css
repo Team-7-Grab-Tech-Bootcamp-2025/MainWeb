@@ -2,10 +2,10 @@
 
 @layer components {
   .chat-input-container {
-    @apply w-full px-2 pb-4;
+    @apply w-full pb-4;
   }
 
   .chat-input {
-    @apply border-none bg-transparent px-2 py-0;
+    @apply border-none bg-transparent px-2 py-0 text-base;
   }
 }
