@@ -69,15 +69,22 @@ export default function Restaurant() {
     },
   );
 
+  const maxUiPages = Math.ceil(totalReviews / UI_PAGE_SIZE);
+
+  const maxApiPages = Math.ceil(totalReviews / API_PAGE_SIZE);
+
+  const isValidPage =
+    currentUiPage <= maxUiPages && currentApiPage <= maxApiPages;
+
   const displayedReviews = useMemo(() => {
-    if (!reviews) return [];
+    if (!reviews || !isValidPage) return [];
 
     const apiPageOffset = (currentUiPage - 1) % (API_PAGE_SIZE / UI_PAGE_SIZE);
     const startIndex = apiPageOffset * UI_PAGE_SIZE;
     const endIndex = startIndex + UI_PAGE_SIZE;
 
     return reviews.slice(startIndex, endIndex);
-  }, [reviews, currentUiPage]);
+  }, [reviews, currentUiPage, isValidPage]);
 
   const handleGoBack = () => {
     navigate(-1);
@@ -89,7 +96,8 @@ export default function Restaurant() {
   };
 
   const handlePageChange = (page: number) => {
-    setCurrentUiPage(page);
+    const validPage = Math.min(page, maxUiPages);
+    setCurrentUiPage(validPage);
   };
 
   const handleTextOnlyChange = (checked: boolean) => {
@@ -287,7 +295,7 @@ export default function Restaurant() {
                               </List.Item>
                             )}
                           />
-                        ) : (
+                        ) : displayedReviews.length > 0 ? (
                           <>
                             <List
                               itemLayout="vertical"
@@ -327,7 +335,10 @@ export default function Restaurant() {
                               <div className="mt-4 flex justify-center">
                                 <Pagination
                                   current={currentUiPage}
-                                  total={totalReviews}
+                                  total={Math.min(
+                                    totalReviews,
+                                    maxApiPages * API_PAGE_SIZE,
+                                  )}
                                   pageSize={UI_PAGE_SIZE}
                                   onChange={handlePageChange}
                                   showSizeChanger={false}
@@ -335,6 +346,10 @@ export default function Restaurant() {
                               </div>
                             )}
                           </>
+                        ) : (
+                          <div className="py-8 text-center">
+                            <Text type="secondary">Không có đánh giá nào</Text>
+                          </div>
                         )}
                       </div>
                     ),
@@ -375,11 +390,9 @@ export default function Restaurant() {
                       const rating = restaurant.ratingPlatforms?.[index] || 0;
                       if (rating === 0) return null;
 
-                      // Skip if we've already seen this platform
                       if (seenPlatforms.has(platform.toLowerCase()))
                         return null;
 
-                      // Mark this platform as seen
                       seenPlatforms.add(platform.toLowerCase());
 
                       return (
