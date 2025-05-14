@@ -35,7 +35,7 @@ import type {
   MenuItem,
   RestaurantReviewLabel,
 } from "../types/restaurant";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   CATEGORY_NAMES_VN,
   type RatingCategory,
@@ -70,14 +70,18 @@ export default function Restaurant() {
   );
 
   const maxUiPages = Math.ceil(totalReviews / UI_PAGE_SIZE);
-
   const maxApiPages = Math.ceil(totalReviews / API_PAGE_SIZE);
-
   const isValidPage =
     currentUiPage <= maxUiPages && currentApiPage <= maxApiPages;
 
+  useEffect(() => {
+    if (currentUiPage > maxUiPages && maxUiPages > 0) {
+      setCurrentUiPage(1);
+    }
+  }, [totalReviews, maxUiPages, currentUiPage]);
+
   const displayedReviews = useMemo(() => {
-    if (!reviews || !isValidPage) return [];
+    if (!reviews || reviews.length === 0 || !isValidPage) return [];
 
     const apiPageOffset = (currentUiPage - 1) % (API_PAGE_SIZE / UI_PAGE_SIZE);
     const startIndex = apiPageOffset * UI_PAGE_SIZE;
@@ -96,7 +100,7 @@ export default function Restaurant() {
   };
 
   const handlePageChange = (page: number) => {
-    const validPage = Math.min(page, maxUiPages);
+    const validPage = Math.min(page, maxUiPages || 1);
     setCurrentUiPage(validPage);
   };
 
@@ -348,7 +352,11 @@ export default function Restaurant() {
                           </>
                         ) : (
                           <div className="py-8 text-center">
-                            <Text type="secondary">Không có đánh giá nào</Text>
+                            <Text type="secondary">
+                              {textOnly
+                                ? "Không có đánh giá nào có nội dung cho mục này"
+                                : "Không có đánh giá nào cho mục này"}
+                            </Text>
                           </div>
                         )}
                       </div>
