@@ -14,22 +14,30 @@
   }
 
   .chat-bubble {
-    @apply max-w-[80%] rounded-lg p-3;
+    @apply py-2.5;
   }
 
   .chat-message-user .chat-bubble {
-    @apply bg-gray-100 text-white;
+    @apply max-w-[80%] rounded-3xl rounded-br-lg border border-[rgba(5,5,5,0.1)] bg-gray-100 px-4;
   }
 
   .chat-message-bot .chat-bubble {
-    @apply bg-gray-100;
+    @apply max-w-full;
   }
 
   .chat-content {
-    @apply m-0 break-words;
+    @apply m-0 text-base break-words;
   }
 
-  .chat-timestamp {
-    @apply mt-1 block text-right text-xs opacity-70;
+  .chat-images {
+    @apply mt-2;
+  }
+
+  .chat-image-container {
+    @apply overflow-hidden rounded-lg;
+  }
+
+  .chat-image {
+    @apply max-h-[200px] max-w-[200px] object-cover;
   }
 }
