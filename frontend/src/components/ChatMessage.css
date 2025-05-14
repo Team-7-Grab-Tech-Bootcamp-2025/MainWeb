@@ -40,4 +40,14 @@
   .chat-image {
     @apply max-h-[200px] max-w-[200px] object-cover;
   }
+
+  .restaurant-cards-container {
+    @apply pt-1;
+  }
+
+  .restaurant-suggestion {
+    @apply flex-1;
+    transform: scale(0.95);
+    transform-origin: top left;
+  }
 }
