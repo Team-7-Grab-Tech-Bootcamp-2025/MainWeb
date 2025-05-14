@@ -19,6 +19,7 @@ interface RestaurantCardProps {
   categories: string[];
   address: string;
   distance?: number;
+  disableExpand?: boolean;
 }
 
 const RestaurantCard: React.FC<RestaurantCardProps> = ({
@@ -29,6 +30,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   address,
   id,
   distance,
+  disableExpand = false,
 }) => {
   const { token } = useToken();
   const navigate = useNavigate();
@@ -72,7 +74,7 @@ const RestaurantCard: React.FC<RestaurantCardProps> = ({
   };
 
   const handleMouseEnter = () => {
-    if (!isLargeScreen) return;
+    if (!isLargeScreen || disableExpand) return;
 
     hoverTimerRef.current = setTimeout(() => {
       calculateCardPosition();

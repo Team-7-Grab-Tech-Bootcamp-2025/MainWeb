@@ -44,7 +44,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -115,7 +115,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
           </Flex>
         )}
 
-        <Input
+        <Input.TextArea
           className="chat-input"
           variant="borderless"
           placeholder={placeholder}
@@ -123,6 +123,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           autoComplete="off"
+          autoSize={{ minRows: 1, maxRows: 5 }}
+          style={{ resize: "none" }}
         />
 
         <Flex align="center" justify="space-between">

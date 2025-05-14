@@ -1,7 +1,9 @@
 import React from "react";
-import { Typography, Image, Flex, Tag } from "antd";
+import { Typography, Image, Flex, Tag, Row, Col } from "antd";
 import "./ChatMessage.css";
-import { NavLink } from "react-router";
+import { useQuery } from "@tanstack/react-query";
+import { restaurantApi } from "../services/restaurantApi";
+import RestaurantCard from "./RestaurantCard";
 
 const { Paragraph } = Typography;
 
@@ -13,6 +15,32 @@ export interface ChatMessageProps {
   images?: string[];
   restaurantIds?: string[];
 }
+
+// Component to fetch and display a restaurant card
+const RestaurantSuggestion = ({ id }: { id: string }) => {
+  const { data, isLoading } = useQuery({
+    queryKey: ["restaurant", id],
+    queryFn: () => restaurantApi.getById(id),
+  });
+
+  if (isLoading || !data) {
+    return <Tag color="#c99383">Nhà hàng đang tải...</Tag>;
+  }
+
+  const { restaurant } = data;
+  return (
+    <RestaurantCard
+      id={restaurant.id}
+      name={restaurant.name}
+      rating={restaurant.rating}
+      reviewCount={restaurant.reviewCount}
+      categories={[restaurant.foodTypeName]}
+      address={restaurant.address}
+      distance={restaurant.distance}
+      disableExpand={true}
+    />
+  );
+};
 
 const ChatMessage: React.FC<ChatMessageProps> = ({
   type,
@@ -31,24 +59,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         <Paragraph className="chat-content">{content}</Paragraph>
 
         {hasRestaurantIds && (
-          <Flex
-            className="restaurant-tags"
-            wrap
-            gap={4}
-            style={{ marginBottom: "8px" }}
-          >
-            {restaurantIds.map((id, index) => (
-              <NavLink
-                to={`/restaurant/${id}`}
-                key={index}
-                className="transition-all duration-300 hover:scale-105"
-              >
-                <Tag bordered={false} color="#c99383" key={index}>
-                  Nhà hàng {index + 1}
-                </Tag>
-              </NavLink>
-            ))}
-          </Flex>
+          <div className="restaurant-suggestions">
+            <Paragraph className="mb-1 text-base">Nhà hàng gợi ý:</Paragraph>
+            <Row gutter={[16, 16]} className="restaurant-cards-container">
+              {restaurantIds.map((id, index) => (
+                <Col key={index} xs={24} sm={12} md={8}>
+                  <RestaurantSuggestion id={id} />
+                </Col>
+              ))}
+            </Row>
+          </div>
         )}
 
         {hasImages && (
