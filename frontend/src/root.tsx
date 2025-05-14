@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { StyleProvider } from "@ant-design/cssinjs";
 import { ConfigProvider, Flex } from "antd";
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
@@ -47,7 +46,6 @@ export function HydrateFallback() {
       <Flex className="min-h-screen" align="center" justify="center">
         <LoadingDot />
       </Flex>
-
     </ConfigProvider>
   );
 }
@@ -85,10 +83,6 @@ export default function Root() {
           }}
         >
           <Outlet />
-          <ReactQueryDevtools
-            initialIsOpen={false}
-            buttonPosition="bottom-left"
-          />
         </ConfigProvider>
       </StyleProvider>
     </QueryClientProvider>
