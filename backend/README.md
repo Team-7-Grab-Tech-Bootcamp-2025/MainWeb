@@ -1,6 +1,6 @@
-# Skeleton Bootcamp Backend
+# Angi Backend
 
-A modern RESTful API for managing todos efficiently, built with Go using clean architecture principles.
+A modern RESTful API for the Angi restaurant review and rating platform, built with Go using clean architecture principles.
 
 ## Tech Stack
 
@@ -22,20 +22,20 @@ A modern RESTful API for managing todos efficiently, built with Go using clean a
 ├── config
 │   └── config.go         # Configuration management
 ├── database
-│   └── db.go            # Database connection setup
+│   └── db.go             # Database connection setup
 ├── internal
-│   ├── controller       # HTTP handlers
-│   ├── dto             # Data Transfer Objects
-│   ├── logger          # Logging configuration
-│   ├── model           # Data models
-│   ├── repository      # Database operations
-│   └── service         # Business logic
-├── docs                # Swagger documentation
-├── docker-compose.yml  # Docker compose configuration
-├── Dockerfile         # Docker build configuration
-├── go.mod            # Go module file
-├── go.sum            # Go module checksums
-└── README.md         # Project documentation
+│   ├── constant          # Constants and enums
+│   ├── controller        # HTTP handlers
+│   ├── dto               # Data Transfer Objects
+│   ├── logger            # Logging configuration
+│   ├── model             # Data models
+│   ├── repository        # Database operations
+│   └── service           # Business logic
+├── docs                  # Swagger documentation
+├── docker-compose.yml    # Docker compose configuration
+├── Dockerfile            # Docker build configuration
+├── go.mod                # Go module file
+└── README.md             # Project documentation
 ```
 
 ## Getting Started
@@ -49,15 +49,23 @@ A modern RESTful API for managing todos efficiently, built with Go using clean a
 ### Running with Docker
 
 1. Clone the repository:
+
 ```bash
-git clone https://github.com/tuannguyensn2001/skeleton-bootcamp-backend
-cd skeleton-bootcamp-backend
+git clone https://github.com/yourusername/angi.git
+cd angi/backend
 ```
 
 2. Start the application using Docker Compose:
+
 ```bash
-docker-compose up -d
+./rebuild-all.sh
 ```
+
+This script will:
+
+- Build the Docker image
+- Start the MySQL database container
+- Start the application container
 
 The application will be available at `http://localhost:8080`
 
@@ -65,17 +73,19 @@ The application will be available at `http://localhost:8080`
 
 1. Clone the repository
 2. Create a `.env` file based on `.env.example`:
+
 ```env
 SERVER_PORT=8080
 DATABASE_HOST=localhost
 DATABASE_PORT=3306
 DATABASE_USER=root
 DATABASE_PASSWORD=password
-DATABASE_NAME=todo_db
+DATABASE_NAME=angi_db
 ```
 
 3. Run MySQL database (or use Docker Compose for database only)
 4. Run the application:
+
 ```bash
 go run cmd/main.go
 ```
@@ -83,40 +93,50 @@ go run cmd/main.go
 ## API Endpoints
 
 ### Health Check
+
 - `GET /health` - Check API health status
 
-### Todo Endpoints
+### Restaurant Endpoints
 
-- `GET /api/v1/todos` - Get all todos
-- `GET /api/v1/todos/:id` - Get a specific todo
-- `POST /api/v1/todos` - Create a new todo
-- `PUT /api/v1/todos/:id` - Update a todo
-- `DELETE /api/v1/todos/:id` - Delete a todo
+- `GET /api/v1/restaurants` - Get all restaurants
+- `GET /api/v1/restaurants/:id` - Get a specific restaurant
+- `GET /api/v1/restaurants/search` - Search restaurants
+- `GET /api/v1/restaurants/cuisines` - Get all cuisines
+- `GET /api/v1/cuisines/:name/restaurants` - Get restaurants by cuisine
+
+### Review Endpoints
+
+- `GET /api/v1/restaurants/:id/reviews` - Get reviews for a restaurant
+- `POST /api/v1/restaurants/:id/reviews` - Create a new review
 
 ## Request/Response Examples
 
-### Create Todo
+### Get Restaurants
+
 ```json
-POST /api/v1/todos
-{
-    "title": "Complete project",
-    "description": "Finish the todo app",
-    "status": "pending"
-}
+GET /api/v1/restaurants?latitude=10.7776&longitude=106.6977&limit=10
 ```
 
 ### Response Format
+
 ```json
 {
-    "message": "Todo created successfully",
-    "data": {
-        "id": 1,
-        "title": "Complete project",
-        "description": "Finish the todo app",
-        "status": "pending",
-        "created_at": "2024-03-12T10:00:00Z",
-        "updated_at": "2024-03-12T10:00:00Z"
+  "message": "Restaurants retrieved successfully",
+  "data": [
+    {
+      "id": "123",
+      "name": "Restaurant Name",
+      "address": "123 Main St",
+      "latitude": 10.7776,
+      "longitude": 106.6977,
+      "rating": 4.5,
+      "review_count": 120,
+      "city_id": "SGN",
+      "district_id": "D1",
+      "food_type_name": "Vietnamese",
+      "distance": 0.5
     }
+  ]
 }
 ```
 
@@ -126,35 +146,39 @@ POST /api/v1/todos
 
 The API is documented using Swagger/OpenAPI. To access the documentation:
 
-1. Install Swagger tools:
-```bash
-go install github.com/swaggo/swag/cmd/swag@latest
-```
-
-2. Generate Swagger documentation:
-```bash
-swag init -g cmd/main.go
-```
-
-3. Access the Swagger UI:
-   - Start the application
-   - Visit `http://localhost:8080/swagger/index.html`
+1. Start the application
+2. Visit `http://localhost:8080/swagger/index.html`
 
 The Swagger UI provides interactive documentation where you can:
+
 - View all available endpoints
 - Read detailed API descriptions
 - Test API endpoints directly from the browser
 - View request/response schemas
 
-## Features
+## Architecture
 
-- Clean Architecture implementation
-- Dependency Injection using Uber FX
-- Structured logging with Zerolog
-- Configuration management with Viper
-- CORS support
-- Swagger API documentation
-- Docker support
-- Health check endpoint
-- MySQL database integration
-- GORM ORM for database operations 
+The application follows clean architecture principles:
+
+1. **Controller Layer**: Handles HTTP requests/responses and input validation
+2. **Service Layer**: Contains business logic and orchestrates data operations
+3. **Repository Layer**: Abstracts data access and database operations
+4. **Model Layer**: Defines data structures and domain entities
+
+## Dependency Injection
+
+The application uses Uber FX for dependency injection, which helps to:
+
+- Create loosely coupled components
+- Manage dependencies efficiently
+- Improve testability
+- Simplify lifecycle management
+
+## Configuration
+
+The application uses Viper for configuration management, allowing:
+
+- Environment-based configuration
+- Multiple config sources (files, env vars)
+- Hot reloading of configuration
+- Type-safe configuration access
